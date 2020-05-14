@@ -1,0 +1,14 @@
+{
+  "name": "vertua-firebase",
+  "version": "1.0.0",
+  "description": "All things Firebase for Vertua app.",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vertua/vertua-firebase.git"
+  },
+  "author": "Vertua Inc.",
+  "license": "SEE LICENSE IN LICENSE"
+}
