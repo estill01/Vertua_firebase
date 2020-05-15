@@ -1,1 +1,5 @@
 .DS_Store
+node_modules/
+functions/node_modules/
+firestore-debug.log
+functions-debug.log

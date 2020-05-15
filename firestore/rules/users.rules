@@ -1,0 +1,13 @@
+		// USERS
+		// ----------------------------
+		match /users/{userId} {
+			allow read: if isSelf(userId) || isPublic();
+		}
+
+		function isUser(doc) {
+			return doc.size() == 3
+			&& doc.private is bool
+			&& doc.username is string
+			&& doc.avatar_url is string
+		}
+

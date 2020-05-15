@@ -1,0 +1,42 @@
+{
+  "name": "firebase",
+  "description": "Security Rules, Cloud Functions, and more",
+  "version": "1.0.0",
+  "author": "Vertua Inc",
+  "private": true,
+  "license": "SEE LICENSE IN LICENSE",
+  "scripts": {
+		"deploy:staging": "npm run build:staging && firebase deploy",
+		"deploy:staging:functions": "npm run build:staging && firebase deploy --only functions",
+		"deploy:staging:firestore": "npm run build:staging && firebase deploy --only firestore",
+		"deploy:staging:storage": "npm run build:staging && firebase deploy --only storage",
+		"deploy:production": "npm run build:production && firebase deploy",
+		"deploy:production:functions": "npm run build:production && firebase deploy --only functions",
+		"deploy:production:firestore": "npm run build:production && firebase deploy --only firestore",
+		"deploy:production:storage": "npm run build:production && firebase deploy --only storage",
+		"build": "npm run use:staging && npm run _build",
+		"_build": "npm run build:functions && npm run build:firestore",
+		"build:staging": "npm run build",
+		"build:production": "npm run use:production && npm run build",
+		"build:functions": "cd functions; npm run build; cd ..",
+
+		"build:firestore": "cd firestore; firestore-rulez; cd ..",
+
+		"build:rules": "npm run build:firestore && npm run _build:rules:post:mac", 
+
+		"_build:rules:post:mac": 
+		"{ echo \"rules_version = \"2\";\" ; cat firestore/firestore.rules ; } > firestore/firestore.rules.tmp ; mv firestore/firestore.rules.tmp firestore/firestore.rules",
+
+		"use:staging": "firebase use vertua--staging",
+		"use:production": "firebase ues vertua--production",
+		"shell": "npm use:staging && cd functions && firebase functions:shell",
+		"emulators": "npm use:staging && firebase emulators:start --only functions,firestore"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vertua/vertua-firebase.git"
+  },
+  "devDependencies": {
+    "firestore-rulez": "^0.2.0"
+  }
+}

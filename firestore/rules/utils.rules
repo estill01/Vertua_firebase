@@ -1,20 +1,3 @@
-rules_version = 2;
-service cloud.firestore {
-	match /databases/{database}/documents {
-		// USERS
-		// ----------------------------
-		match /users/{userId} {
-			allow read: if isSelf(userId) || isPublic();
-		}
-
-		function isUser(doc) {
-			return doc.size() == 3
-			&& doc.private is bool
-			&& doc.username is string
-			&& doc.avatar_url is string
-		}
-
-
 		//  UTILS 
 		// --------------------------
 		function requestor() { return request.auth }
@@ -29,6 +12,3 @@ service cloud.firestore {
 
 		function madeBySelf(uid) { return requestor().uid == existingData().creator.id }
 		function isPublic() { return existingData().isPrivate == false }
-
-  }
-}
