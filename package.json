@@ -23,12 +23,10 @@
 		"build:rules": "npm run build:firestore && npm run _build:rules:post:mac", 
 		"_build:rules:post:mac": 
 		"{ printf \"rules_version = '2';\n\" ; cat firestore/firestore.rules ; } > firestore/firestore.rules.tmp ; mv firestore/firestore.rules.tmp firestore/firestore.rules",
-		"_build:rules:post:mac:old": 
-		"{ echo \"rules_version = \"2\"\";\" ; cat firestore/firestore.rules ; } > firestore/firestore.rules.tmp ; mv firestore/firestore.rules.tmp firestore/firestore.rules",
 		"use:staging": "firebase use vertua--staging",
 		"use:production": "firebase ues vertua--production",
-		"shell": "npm use:staging && cd functions && firebase functions:shell",
-		"emulators": "npm use:staging && firebase emulators:start --only functions,firestore"
+		"shell": "npm run use:staging && cd functions && firebase functions:shell",
+		"emulators": "npm run use:staging && firebase emulators:start --only functions,firestore"
   },
   "repository": {
     "type": "git",

@@ -1,0 +1,68 @@
+[debug] [2020-05-16T01:09:03.131Z] ----------------------------------------------------------------------
+[debug] [2020-05-16T01:09:03.134Z] Command:       /Users/ethanstillman/.nvm/versions/node/v10.15.3/bin/node /Users/ethanstillman/.nvm/versions/node/v10.15.3/bin/firebase emulators:start --only functions,firestore
+[debug] [2020-05-16T01:09:03.135Z] CLI Version:   8.2.0
+[debug] [2020-05-16T01:09:03.135Z] Platform:      darwin
+[debug] [2020-05-16T01:09:03.135Z] Node Version:  v10.15.3
+[debug] [2020-05-16T01:09:03.136Z] Time:          Fri May 15 2020 18:09:03 GMT-0700 (Pacific Daylight Time)
+[debug] [2020-05-16T01:09:03.136Z] ----------------------------------------------------------------------
+[debug] [2020-05-16T01:09:03.137Z] 
+[debug] [2020-05-16T01:09:03.147Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2020-05-16T01:09:03.147Z] > authorizing via signed-in user
+[info] i  emulators: Starting emulators: functions, firestore
+[debug] [2020-05-16T01:09:03.193Z] [hub] writing locator at /var/folders/3l/yfzpxp091_1f9r7vd9q_q7jh0000gn/T/hub-vertua--staging.json
+[info] ✔  hub: emulator hub started at http://localhost:4400
+[info] ✔  functions: Using node@10 from host.
+[info] ✔  functions: functions emulator started at http://localhost:5001
+[debug] [2020-05-16T01:09:03.492Z] Ignoring unsupported arg: projectId
+[debug] [2020-05-16T01:09:03.492Z] Ignoring unsupported arg: auto_download
+[debug] [2020-05-16T01:09:03.492Z] Starting firestore emulator with command {"binary":"java","args":["-Duser.language=en","-jar","/Users/ethanstillman/.cache/firebase/emulators/cloud-firestore-emulator-v1.11.3.jar","--host","localhost","--port",8080,"--rules","/Users/ethanstillman/code/vertua/code/products/Vertua/vertua/firebase/firestore/firestore.rules","--functions_emulator","localhost:5001"],"optionalArgs":["port","webchannel_port","host","rules","functions_emulator","seed_from_export"],"joinArgs":false}
+[info] i  firestore: firestore emulator logging to firestore-debug.log
+[debug] [2020-05-16T01:09:05.970Z] API endpoint: http://
+[debug] [2020-05-16T01:09:05.971Z] localhost:8080
+If you are using a library that supports the FIRESTORE_EMULATOR_HOST environment variable, run:
+
+   export FIRESTORE_EMULATOR_HOST=localhost:8080
+
+Dev App Server is now running.
+
+
+[info] ✔  firestore: firestore emulator started at http://localhost:8080
+[info] i  firestore: For testing set FIRESTORE_EMULATOR_HOST=localhost:8080
+[info] i  functions: Watching "/Users/ethanstillman/code/vertua/code/products/Vertua/vertua/firebase/functions" for Cloud Functions...
+[debug] [2020-05-16T01:09:06.072Z] [worker-pool] addWorker(~diagnostic~) 
+[debug] [2020-05-16T01:09:06.072Z] [worker-pool] Adding worker with key ~diagnostic~, total=1 
+[debug] [2020-05-16T01:09:06.073Z] [worker-pool] submitWork(triggerId=) 
+[debug] [2020-05-16T01:09:06.074Z] [worker-~diagnostic~-7c8c0f2c-e38c-422e-a393-d0579b4b2d29]: Assigning socketPath: /var/folders/3l/yfzpxp091_1f9r7vd9q_q7jh0000gn/T/fire_emu_70750.sock 
+[debug] [2020-05-16T01:09:06.074Z] [worker-~diagnostic~-7c8c0f2c-e38c-422e-a393-d0579b4b2d29]: BUSY 
+[debug] [2020-05-16T01:09:06.537Z] [runtime-status] [70750] Functions runtime initialized. {"cwd":"/Users/ethanstillman/code/vertua/code/products/Vertua/vertua/firebase/functions","node_version":"10.15.3"} 
+[debug] [2020-05-16T01:09:06.539Z] [runtime-status] [70750] Disabled runtime features: undefined 
+[debug] [2020-05-16T01:09:06.546Z] [runtime-status] [70750] Resolved module firebase-admin {"declared":true,"installed":true,"version":"8.11.0","resolution":"/Users/ethanstillman/code/vertua/code/products/Vertua/vertua/firebase/functions/node_modules/firebase-admin/lib/index.js"} 
+[debug] [2020-05-16T01:09:06.550Z] [runtime-status] [70750] Resolved module firebase-functions {"declared":true,"installed":true,"version":"3.6.1","resolution":"/Users/ethanstillman/code/vertua/code/products/Vertua/vertua/firebase/functions/node_modules/firebase-functions/lib/index.js"} 
+[debug] [2020-05-16T01:09:06.555Z] [runtime-status] [70750] Outgoing network have been stubbed. [{"name":"http","status":"mocked"},{"name":"http","status":"mocked"},{"name":"https","status":"mocked"},{"name":"https","status":"mocked"},{"name":"net","status":"mocked"}] 
+[debug] [2020-05-16T01:09:06.634Z] [runtime-status] [70750] Checked functions.config() {"config":{}} 
+[debug] [2020-05-16T01:09:06.635Z] [runtime-status] [70750] Resolved module firebase-functions {"declared":true,"installed":true,"version":"3.6.1","resolution":"/Users/ethanstillman/code/vertua/code/products/Vertua/vertua/firebase/functions/node_modules/firebase-functions/lib/index.js"} 
+[debug] [2020-05-16T01:09:06.636Z] [runtime-status] [70750] Resolved module firebase-admin {"declared":true,"installed":true,"version":"8.11.0","resolution":"/Users/ethanstillman/code/vertua/code/products/Vertua/vertua/firebase/functions/node_modules/firebase-admin/lib/index.js"} 
+[debug] [2020-05-16T01:09:06.637Z] [runtime-status] [70750] Resolved module firebase-functions {"declared":true,"installed":true,"version":"3.6.1","resolution":"/Users/ethanstillman/code/vertua/code/products/Vertua/vertua/firebase/functions/node_modules/firebase-functions/lib/index.js"} 
+[debug] [2020-05-16T01:09:06.637Z] [runtime-status] [70750] firebase-admin has been stubbed. {"adminResolution":{"declared":true,"installed":true,"version":"8.11.0","resolution":"/Users/ethanstillman/code/vertua/code/products/Vertua/vertua/firebase/functions/node_modules/firebase-admin/lib/index.js"}} 
+[debug] [2020-05-16T01:09:06.642Z] [runtime-status] [70750] initializeApp(DEFAULT) {"databaseURL":"https://vertua--staging.firebaseio.com","storageBucket":"vertua--staging.appspot.com","projectId":"vertua--staging"} 
+[info] ✔  functions[helloWorld]: http function initialized (http://localhost:5001/vertua--staging/us-central1/helloWorld).
+[info] ✔  emulators: All emulators started, it is now safe to connect.
+[debug] [2020-05-16T01:09:06.646Z] [worker-~diagnostic~-7c8c0f2c-e38c-422e-a393-d0579b4b2d29]: IDLE 
+[debug] [2020-05-16T01:09:18.549Z] May 15, 2020 6:09:18 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected non-HTTP/2 connection.
+
+[debug] [2020-05-16T01:09:18.841Z] May 15, 2020 6:09:18 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected HTTP/2 connection.
+
+[debug] [2020-05-16T01:09:23.316Z] May 15, 2020 6:09:23 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /sw-debug.js
+
+[debug] [2020-05-16T01:09:52.424Z] May 15, 2020 6:09:52 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /sw-debug.js
+
+[debug] [2020-05-16T01:10:16.869Z] May 15, 2020 6:10:16 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /sw-debug.js
+
+[debug] [2020-05-16T01:10:45.893Z] May 15, 2020 6:10:45 PM io.gapi.emulators.netty.NotFoundHandler handleRequest
+INFO: Unknown request URI: /sw-debug.js
+
