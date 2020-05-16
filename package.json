@@ -19,14 +19,12 @@
 		"build:staging": "npm run build",
 		"build:production": "npm run use:production && npm run build",
 		"build:functions": "cd functions; npm run build; cd ..",
-
 		"build:firestore": "cd firestore; firestore-rulez; cd ..",
-
 		"build:rules": "npm run build:firestore && npm run _build:rules:post:mac", 
-
 		"_build:rules:post:mac": 
-		"{ echo \"rules_version = \"2\";\" ; cat firestore/firestore.rules ; } > firestore/firestore.rules.tmp ; mv firestore/firestore.rules.tmp firestore/firestore.rules",
-
+		"{ printf \"rules_version = '2';\n\" ; cat firestore/firestore.rules ; } > firestore/firestore.rules.tmp ; mv firestore/firestore.rules.tmp firestore/firestore.rules",
+		"_build:rules:post:mac:old": 
+		"{ echo \"rules_version = \"2\"\";\" ; cat firestore/firestore.rules ; } > firestore/firestore.rules.tmp ; mv firestore/firestore.rules.tmp firestore/firestore.rules",
 		"use:staging": "firebase use vertua--staging",
 		"use:production": "firebase ues vertua--production",
 		"shell": "npm use:staging && cd functions && firebase functions:shell",
