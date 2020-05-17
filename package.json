@@ -6,6 +6,16 @@
   "private": true,
   "license": "SEE LICENSE IN LICENSE",
   "scripts": {
+		"use:staging": "firebase use vertua--staging",
+		"use:production": "firebase ues vertua--production",
+		"build:staging": "npm run use:staging && npm run _build",
+		"build:production": "npm run use:production && npm run _build",
+		"_build": "npm run build:functions && npm run build:firestore",
+		"build:functions": "cd functions && npm run build && cd ..",
+		"build:firestore": "cd firestore && firestore-rulez && cd .. && npm run _build:firestore:post:mac",
+		"_build:firestore:post:mac": 
+		"{ printf \"rules_version = '2';\n\" ; cat firestore/firestore.rules ; } > firestore/firestore.rules.tmp && mv firestore/firestore.rules.tmp firestore/firestore.rules",
+		"build:rules": "npm run build:firestore", 
 		"deploy:staging": "npm run build:staging && firebase deploy",
 		"deploy:staging:functions": "npm run build:staging && firebase deploy --only functions",
 		"deploy:staging:firestore": "npm run build:staging && firebase deploy --only firestore",
@@ -14,19 +24,8 @@
 		"deploy:production:functions": "npm run build:production && firebase deploy --only functions",
 		"deploy:production:firestore": "npm run build:production && firebase deploy --only firestore",
 		"deploy:production:storage": "npm run build:production && firebase deploy --only storage",
-		"build": "npm run use:staging && npm run _build",
-		"_build": "npm run build:functions && npm run build:firestore",
-		"build:staging": "npm run build",
-		"build:production": "npm run use:production && npm run build",
-		"build:functions": "cd functions; npm run build; cd ..",
-		"build:firestore": "cd firestore; firestore-rulez; cd ..",
-		"build:rules": "npm run build:firestore && npm run _build:rules:post:mac", 
-		"_build:rules:post:mac": 
-		"{ printf \"rules_version = '2';\n\" ; cat firestore/firestore.rules ; } > firestore/firestore.rules.tmp ; mv firestore/firestore.rules.tmp firestore/firestore.rules",
-		"use:staging": "firebase use vertua--staging",
-		"use:production": "firebase ues vertua--production",
-		"shell": "npm run use:staging && cd functions && firebase functions:shell",
-		"emulators": "npm run use:staging && firebase emulators:start --only functions,firestore"
+		"emulators": "npm run use:staging && firebase emulators:start --only functions,firestore",
+		"shell": "npm run use:staging && cd functions && npm run build && firebase functions:shell"
   },
   "repository": {
     "type": "git",

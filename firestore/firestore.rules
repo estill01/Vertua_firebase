@@ -5,6 +5,7 @@ service cloud.firestore {
 		// ----------------------------
 		match /users/{userId} {
 			allow read: if isSelf(userId) || isPublic();
+			allow create: if request.auth.uid == userId && request.resource.data.createdAt == request.time;
 		}
 
 		function isUser(doc) {
