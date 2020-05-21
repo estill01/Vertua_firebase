@@ -5,7 +5,7 @@
   "author": "Vertua Inc",
   "private": true,
   "license": "SEE LICENSE IN LICENSE",
-  "scripts": {
+:  "scripts": {
 		"use:staging": "firebase use vertua--staging",
 		"use:production": "firebase ues vertua--production",
 		"build:staging": "npm run use:staging && npm run _build",

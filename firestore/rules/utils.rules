@@ -1,5 +1,7 @@
 		//  UTILS 
 		// --------------------------
+
+
 		function requestor() { return request.auth }
 		function requestorEmail() { return requestor().token.email }
 		function requestorEmailIsVerified() { return requestor().token.email_verified }
@@ -12,3 +14,14 @@
 
 		function madeBySelf(uid) { return requestor().uid == existingData().creator.id }
 		function isPublic() { return existingData().isPrivate == false }
+
+		function belongsTo(userId) {
+			return request.auth.uid == userId;
+		}
+
+
+		function hasWritePermision(userId, itemId) {
+			// get the item
+			// get the ACL for the item
+			// check if userId has write permissions on ACL
+		}

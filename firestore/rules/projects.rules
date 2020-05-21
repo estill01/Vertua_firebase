@@ -1,0 +1,21 @@
+
+		// PROJECTS
+		// -------------------------
+
+		match /projects/{projectId} {
+			allow read;
+			allow write; 
+		}
+
+		function isProject(doc) {
+			return 
+			doc.name is string &&
+			doc.description is string
+		}
+
+
+		/* match /approaches/{approachId} { */
+		/* 	approch to projectId */
+		/* } */
+
+

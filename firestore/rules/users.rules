@@ -1,12 +1,13 @@
 		// USERS
 		// ----------------------------
 		match /users/{userId} {
-			allow read: if isSelf(userId) || isPublic();
-			allow create: if request.auth.uid == userId && request.resource.data.createdAt == request.time;
+			allow read: if true;
 		}
 
 		function isUser(doc) {
 			return doc.size() == 3
+			&& doc.uid is string
+			&& doc.displayName is string 
 			&& doc.private is bool
 			&& doc.username is string
 			&& doc.avatar_url is string
