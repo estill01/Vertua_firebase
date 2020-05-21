@@ -13,8 +13,10 @@
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
     "build": "babel src -d dist",
-    "config:staging": "npm run vars:staging && cross-env-shell NODE_ENV=staging node config.js",
-    "config:production": "npm run vars:production && cross-env-shell NODE_ENV=production node config.js",
+    "config:staging": "npm run use:staging && cross-env-shell NODE_ENV=staging node config/index.js",
+    "config:production": "npm run use:production && cross-env-shell NODE_ENV=production node config/index.js",
+		"use:staging": "firebase use vertua--staging",
+		"use:production": "firebase use vertua--production",
 		"vars:staging": "cp .env.staging .env",
 		"vars:production": "cp .env.prod .env"
   },
