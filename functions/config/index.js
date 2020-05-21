@@ -15,5 +15,4 @@ Object.entries(config).forEach((ns) => {
 })
 
 // console.log(args)
-// console.log(`firebase functions:config:set ${args}`)
 exec(`firebase functions:config:set ${args}`)

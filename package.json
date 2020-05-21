@@ -5,27 +5,29 @@
   "author": "Vertua Inc",
   "private": true,
   "license": "SEE LICENSE IN LICENSE",
-:  "scripts": {
+  "scripts": {
 		"use:staging": "firebase use vertua--staging",
 		"use:production": "firebase ues vertua--production",
-		"build:staging": "npm run use:staging && npm run _build",
-		"build:production": "npm run use:production && npm run _build",
-		"_build": "npm run build:functions && npm run build:firestore",
-		"build:functions": "cd functions && npm run build && cd ..",
-		"build:firestore": "cd firestore && firestore-rulez && cd .. && npm run _build:firestore:post:mac",
-		"_build:firestore:post:mac": 
+		"build:staging": "npm run use:staging && npm run build:staging:firebase",
+		"build:staging:firebase": "npm run build:staging:functions && npm run build:firestore",
+		"build:staging:functions": "cd functions && npm run config:staging && npm run build && cd ..",
+		"build:production": "npm run use:production && npm run build:production:firebase",
+		"build:production:firebase": "npm run build:production:functions && npm run build:firestore",
+		"build:production:functions": "cd functions && npm run config:production && npm run build && cd ..",
+		"build:firestore": "cd firestore && firestore-rulez && cd .. && npm run build:firestore:post:mac",
+		"build:firestore:post:mac": 
 		"{ printf \"rules_version = '2';\n\" ; cat firestore/firestore.rules ; } > firestore/firestore.rules.tmp && mv firestore/firestore.rules.tmp firestore/firestore.rules",
 		"build:rules": "npm run build:firestore", 
 		"deploy:staging": "npm run build:staging && firebase deploy",
-		"deploy:staging:functions": "npm run build:staging && firebase deploy --only functions",
-		"deploy:staging:firestore": "npm run build:staging && firebase deploy --only firestore",
-		"deploy:staging:storage": "npm run build:staging && firebase deploy --only storage",
+		"deploy:staging:functions": "npm run build:staging:functions && firebase deploy --only functions",
+		"deploy:staging:firestore": "npm run use:staging && npm run build:firestore && firebase deploy --only firestore",
 		"deploy:production": "npm run build:production && firebase deploy",
-		"deploy:production:functions": "npm run build:production && firebase deploy --only functions",
-		"deploy:production:firestore": "npm run build:production && firebase deploy --only firestore",
-		"deploy:production:storage": "npm run build:production && firebase deploy --only storage",
-		"emulators": "npm run use:staging && firebase emulators:start --only functions,firestore",
-		"shell": "npm run use:staging && cd functions && npm run build && firebase functions:shell"
+		"deploy:production:functions": "npm run build:production:functions && firebase deploy --only functions",
+		"deploy:production:firestore": "npm run use:production && npm run build:firestore && firebase deploy --only firestore",
+		"emulators": "npm run use:staging && npm run vars:emulator && firebase emulators:start --only functions,firestore",
+		"shell": "npm run use:staging && cd functions && npm run build && npm run shell",
+		"vars:emulator": "firebase functions:config:get > .runtimeconfig.json"
+
   },
   "repository": {
     "type": "git",

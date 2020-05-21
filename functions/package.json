@@ -15,16 +15,17 @@
     "build": "babel src -d dist",
     "config:staging": "npm run use:staging && cross-env-shell NODE_ENV=staging node config/index.js",
     "config:production": "npm run use:production && cross-env-shell NODE_ENV=production node config/index.js",
-		"use:staging": "firebase use vertua--staging",
-		"use:production": "firebase use vertua--production",
-		"vars:staging": "cp .env.staging .env",
-		"vars:production": "cp .env.prod .env"
+    "use:staging": "firebase use vertua--staging",
+    "use:production": "firebase use vertua--production",
+    "vars:staging": "cp .env.staging .env",
+    "vars:production": "cp .env.prod .env"
   },
   "engines": {
     "node": "10"
   },
   "dependencies": {
     "@sendgrid/mail": "^7.1.1",
+    "babel-polyfill": "^6.26.0",
     "firebase-admin": "^8.10.0",
     "firebase-functions": "^3.6.0"
   },
