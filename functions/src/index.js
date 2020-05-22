@@ -14,29 +14,39 @@ SendGrid.setApiKey(functions.config().sendgrid.api_key)
 export const onAccountCreate = functions.auth.
 	user()
 	.onCreate(async (userRecord, context) => {
-
-		console.log("userRecord: ", userRecord)
-
 		let user = {
 			uid: userRecord.uid,
 			displayName: userRecord.displayName || '',
 			photoURL: userRecord.photoURL || '',
 			visibilty: 'public',
-			createdAt: userRecord.metadata.createdAt,
+			createdAt: userRecord.metadata.creationTime,
 		} 
 
 		try {
-
 			await app.firestore().collection('users').doc(userRecord.uid).set(user)
-			// Error: value for argument 'data' is not a valid Firestore document. Cannot use 'undefined' as a Firestore value ('createdAt')
-
 		} catch (err) {
-			console.error(err)
-			sendErrorNotificationToAdmin()
+			console.error("Error: ", err)
+			// sendErrorNotificationToAdmin(userRecord)
 		}
-		sendSuccessNotificationToAdmin()
+		// sendSuccessNotificationToAdmin(userRecord)
+
+		// TODO Add to search index
+		// TODO Fix mailers; SendGrid is wonky, see if NodeMailer is more straightforward
+
 	})
 
+export const onAccountDelete = functions.auth.
+	user()
+	.onDelete(async (userRecord, context) => {
+		try {
+			let resp = await app.firestore().collection('users').doc(userRecord.uid).delete()
+			console.log("[Delete] Successfully deleted user: ", resp)
+		} catch (err) {
+			console.error("[Error] Failed to delete user: ", err)
+		}
+
+		// TODO Remove from search index
+	})
 
 
 // --------------------------
@@ -44,7 +54,7 @@ export const onAccountCreate = functions.auth.
 // --------------------------
 
 // TODO Fix: this doesn't seem to be working; should have fired in the catch block..
-function sendEmailToAdmin({ text, html, subject }) {
+function sendEmailToAdmin({ subject, text, html }) {
 	const msg = {
 		to: 'ethan@vertua.com',
 		from: 'ethan@vertua.com',
@@ -52,10 +62,13 @@ function sendEmailToAdmin({ text, html, subject }) {
 		text: text,
 		html: html,
 	}
-	SendGrid.send(msg)
+	try { SendGrid.send(msg) }
+	catch (err) {
+		console.error("Error sending email notification: ", err)
+	}
 }
 
-function sendErrorNotificationToAdmin() {
+function sendErrorNotificationToAdmin(userRecord) {
 	sendEmailToAdmin({
 		subject: '[Error] Error Adding User',
 		text: `[Error] A user signed up but a new user record was not created. Fix manually: ${userRecord}`,
@@ -70,7 +83,7 @@ function sendErrorNotificationToAdmin() {
 	})
 }
 
-function sendSuccessNotificationToAdmin() {
+function sendSuccessNotificationToAdmin(userRecord) {
 	sendEmailToAdmin({
 		subject: '[New User] Vertua',
 		text: `A new user has joined Vertua: ${userRecord}`,
@@ -89,6 +102,7 @@ function sendSuccessNotificationToAdmin() {
 
 
 // TODO onAccountDelete()
+// - remove from users collection
 // - remove from search index
 
 // -----------------------

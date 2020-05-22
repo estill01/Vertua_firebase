@@ -5,7 +5,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.onAccountCreate = void 0;
+exports.onAccountDelete = exports.onAccountCreate = void 0;
 
 require("babel-polyfill");
 
@@ -39,53 +39,83 @@ var onAccountCreate = functions.auth.user().onCreate( /*#__PURE__*/function () {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            console.log("userRecord: ", userRecord);
             user = {
               uid: userRecord.uid,
               displayName: userRecord.displayName || '',
               photoURL: userRecord.photoURL || '',
               visibilty: 'public',
-              createdAt: userRecord.metadata.createdAt
+              createdAt: userRecord.metadata.creationTime
             };
-            _context.prev = 2;
-            _context.next = 5;
+            _context.prev = 1;
+            _context.next = 4;
             return app.firestore().collection('users').doc(userRecord.uid).set(user);
 
-          case 5:
-            _context.next = 11;
+          case 4:
+            _context.next = 9;
             break;
 
-          case 7:
-            _context.prev = 7;
-            _context.t0 = _context["catch"](2);
-            console.error(_context.t0);
-            sendErrorNotificationToAdmin();
+          case 6:
+            _context.prev = 6;
+            _context.t0 = _context["catch"](1);
+            console.error("Error: ", _context.t0); // sendErrorNotificationToAdmin(userRecord)
 
-          case 11:
-            sendSuccessNotificationToAdmin();
-
-          case 12:
+          case 9:
           case "end":
             return _context.stop();
         }
       }
-    }, _callee, null, [[2, 7]]);
+    }, _callee, null, [[1, 6]]);
   }));
 
   return function (_x, _x2) {
     return _ref.apply(this, arguments);
+  };
+}());
+exports.onAccountCreate = onAccountCreate;
+var onAccountDelete = functions.auth.user().onDelete( /*#__PURE__*/function () {
+  var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(userRecord, context) {
+    var resp;
+    return regeneratorRuntime.wrap(function _callee2$(_context2) {
+      while (1) {
+        switch (_context2.prev = _context2.next) {
+          case 0:
+            _context2.prev = 0;
+            _context2.next = 3;
+            return app.firestore().collection('users').doc(userRecord.uid)["delete"]();
+
+          case 3:
+            resp = _context2.sent;
+            console.log("[Delete] Successfully deleted user: ", resp);
+            _context2.next = 10;
+            break;
+
+          case 7:
+            _context2.prev = 7;
+            _context2.t0 = _context2["catch"](0);
+            console.error("[Error] Failed to delete user: ", _context2.t0);
+
+          case 10:
+          case "end":
+            return _context2.stop();
+        }
+      }
+    }, _callee2, null, [[0, 7]]);
+  }));
+
+  return function (_x3, _x4) {
+    return _ref2.apply(this, arguments);
   };
 }()); // --------------------------
 // Utils
 // --------------------------
 // TODO Fix: this doesn't seem to be working; should have fired in the catch block..
 
-exports.onAccountCreate = onAccountCreate;
+exports.onAccountDelete = onAccountDelete;
 
-function sendEmailToAdmin(_ref2) {
-  var text = _ref2.text,
-      html = _ref2.html,
-      subject = _ref2.subject;
+function sendEmailToAdmin(_ref3) {
+  var subject = _ref3.subject,
+      text = _ref3.text,
+      html = _ref3.html;
   var msg = {
     to: 'ethan@vertua.com',
     from: 'ethan@vertua.com',
@@ -94,10 +124,14 @@ function sendEmailToAdmin(_ref2) {
     html: html
   };
 
-  _mail["default"].send(msg);
+  try {
+    _mail["default"].send(msg);
+  } catch (err) {
+    console.error("Error sending email notification: ", err);
+  }
 }
 
-function sendErrorNotificationToAdmin() {
+function sendErrorNotificationToAdmin(userRecord) {
   sendEmailToAdmin({
     subject: '[Error] Error Adding User',
     text: "[Error] A user signed up but a new user record was not created. Fix manually: ".concat(userRecord),
@@ -105,13 +139,14 @@ function sendErrorNotificationToAdmin() {
   });
 }
 
-function sendSuccessNotificationToAdmin() {
+function sendSuccessNotificationToAdmin(userRecord) {
   sendEmailToAdmin({
     subject: '[New User] Vertua',
     text: "A new user has joined Vertua: ".concat(userRecord),
     html: "\n\t\t\t<div>\n\t\t\t\t<h1>A new user has joined Vertua</h1>\n\t\t\t\t<div>\n\t\t\t\t\t".concat(userRecord, "\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t")
   });
 } // TODO onAccountDelete()
+// - remove from users collection
 // - remove from search index
 // -----------------------
 // 	Users
