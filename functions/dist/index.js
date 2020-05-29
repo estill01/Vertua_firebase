@@ -5,7 +5,7 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.onAccountDelete = exports.onAccountCreate = void 0;
+exports.onProjectDelete = exports.onProjectCreate = exports.onUserDelete = exports.onUserCreate = exports.onAccountDelete = exports.onAccountCreate = void 0;
 
 require("babel-polyfill");
 
@@ -13,9 +13,7 @@ var admin = _interopRequireWildcard(require("firebase-admin"));
 
 var functions = _interopRequireWildcard(require("firebase-functions"));
 
-var _mail = _interopRequireDefault(require("@sendgrid/mail"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+var _services = require("./services");
 
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
@@ -25,12 +23,9 @@ function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
-var app = admin.initializeApp();
-
-_mail["default"].setApiKey(functions.config().sendgrid.api_key); // -----------------------
+var app = admin.initializeApp(); // -----------------------
 // 	Accounts
 // -----------------------
-
 
 var onAccountCreate = functions.auth.user().onCreate( /*#__PURE__*/function () {
   var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(userRecord, context) {
@@ -45,21 +40,23 @@ var onAccountCreate = functions.auth.user().onCreate( /*#__PURE__*/function () {
               photoURL: userRecord.photoURL || '',
               visibilty: 'public',
               createdAt: userRecord.metadata.creationTime
-            };
+            }; // TODO check if anonymous ; if so, add to 'anonymousUsers' collection
+
             _context.prev = 1;
             _context.next = 4;
             return app.firestore().collection('users').doc(userRecord.uid).set(user);
 
           case 4:
-            _context.next = 9;
+            _context.next = 10;
             break;
 
           case 6:
             _context.prev = 6;
             _context.t0 = _context["catch"](1);
-            console.error("Error: ", _context.t0); // sendErrorNotificationToAdmin(userRecord)
+            console.error(_context.t0);
+            throw new Error("[onAccountCreate]");
 
-          case 9:
+          case 10:
           case "end":
             return _context.stop();
         }
@@ -85,77 +82,167 @@ var onAccountDelete = functions.auth.user().onDelete( /*#__PURE__*/function () {
 
           case 3:
             resp = _context2.sent;
-            console.log("[Delete] Successfully deleted user: ", resp);
             _context2.next = 10;
             break;
 
-          case 7:
-            _context2.prev = 7;
+          case 6:
+            _context2.prev = 6;
             _context2.t0 = _context2["catch"](0);
-            console.error("[Error] Failed to delete user: ", _context2.t0);
+            console.error(_context2.t0);
+            throw new Error("[onAccountDelete] Failed to delete user");
 
           case 10:
           case "end":
             return _context2.stop();
         }
       }
-    }, _callee2, null, [[0, 7]]);
+    }, _callee2, null, [[0, 6]]);
   }));
 
   return function (_x3, _x4) {
     return _ref2.apply(this, arguments);
   };
-}()); // --------------------------
-// Utils
-// --------------------------
-// TODO Fix: this doesn't seem to be working; should have fired in the catch block..
-
-exports.onAccountDelete = onAccountDelete;
-
-function sendEmailToAdmin(_ref3) {
-  var subject = _ref3.subject,
-      text = _ref3.text,
-      html = _ref3.html;
-  var msg = {
-    to: 'ethan@vertua.com',
-    from: 'ethan@vertua.com',
-    subject: subject,
-    text: text,
-    html: html
-  };
-
-  try {
-    _mail["default"].send(msg);
-  } catch (err) {
-    console.error("Error sending email notification: ", err);
-  }
-}
-
-function sendErrorNotificationToAdmin(userRecord) {
-  sendEmailToAdmin({
-    subject: '[Error] Error Adding User',
-    text: "[Error] A user signed up but a new user record was not created. Fix manually: ".concat(userRecord),
-    html: "\n\t\t\t<div>\n\t\t\t\t<h1>Error Adding User</h1>\n\t\t\t\t<div>".concat(userRecord, "</div>\n\t\t\t\t<hr/>\n\t\t\t\t<div>Fix manually</div>\n\t\t\t</div>\n\t\t")
-  });
-}
-
-function sendSuccessNotificationToAdmin(userRecord) {
-  sendEmailToAdmin({
-    subject: '[New User] Vertua',
-    text: "A new user has joined Vertua: ".concat(userRecord),
-    html: "\n\t\t\t<div>\n\t\t\t\t<h1>A new user has joined Vertua</h1>\n\t\t\t\t<div>\n\t\t\t\t\t".concat(userRecord, "\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t")
-  });
-} // TODO onAccountDelete()
-// - remove from users collection
-// - remove from search index
-// -----------------------
+}()); // -----------------------
 // 	Users
 // -----------------------
-// const onUserCreate = functions.firestore.
-// 	document('users/{userId}')
-// 	.onCreate(async (snapshot, context) => {
-// 		// TODO Add to search index
-// 	}) 
+
+exports.onAccountDelete = onAccountDelete;
+var onUserCreate = functions.firestore.document('users/{userId}').onCreate( /*#__PURE__*/function () {
+  var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(doc, context) {
+    return regeneratorRuntime.wrap(function _callee3$(_context3) {
+      while (1) {
+        switch (_context3.prev = _context3.next) {
+          case 0:
+            _context3.prev = 0;
+            _context3.next = 3;
+            return _services.AlgoliaSearch.addDocToIndex(doc, 'users');
+
+          case 3:
+            _context3.next = 9;
+            break;
+
+          case 5:
+            _context3.prev = 5;
+            _context3.t0 = _context3["catch"](0);
+            console.error(_context3.t0);
+            throw new Error("[onUserCreate]");
+
+          case 9:
+          case "end":
+            return _context3.stop();
+        }
+      }
+    }, _callee3, null, [[0, 5]]);
+  }));
+
+  return function (_x5, _x6) {
+    return _ref3.apply(this, arguments);
+  };
+}());
+exports.onUserCreate = onUserCreate;
+var onUserDelete = functions.firestore.document('users/{userId}').onDelete( /*#__PURE__*/function () {
+  var _ref4 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4(doc, context) {
+    return regeneratorRuntime.wrap(function _callee4$(_context4) {
+      while (1) {
+        switch (_context4.prev = _context4.next) {
+          case 0:
+            _context4.prev = 0;
+            _context4.next = 3;
+            return _services.AlgoliaSearch.removeIDFromIndex(doc.uid, 'users');
+
+          case 3:
+            _context4.next = 9;
+            break;
+
+          case 5:
+            _context4.prev = 5;
+            _context4.t0 = _context4["catch"](0);
+            console.error(_context4.t0);
+            throw new Error("[onUserDelete]");
+
+          case 9:
+          case "end":
+            return _context4.stop();
+        }
+      }
+    }, _callee4, null, [[0, 5]]);
+  }));
+
+  return function (_x7, _x8) {
+    return _ref4.apply(this, arguments);
+  };
+}()); // -----------------------
+// 	Projects
+// -----------------------
+
+exports.onUserDelete = onUserDelete;
+var onProjectCreate = functions.firestore.document('projects/{projectId}').onCreate( /*#__PURE__*/function () {
+  var _ref5 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(doc, context) {
+    return regeneratorRuntime.wrap(function _callee5$(_context5) {
+      while (1) {
+        switch (_context5.prev = _context5.next) {
+          case 0:
+            _context5.prev = 0;
+            _context5.next = 3;
+            return _services.AlgoliaSearch.addDocToIndex(doc, 'projects');
+
+          case 3:
+            _context5.next = 9;
+            break;
+
+          case 5:
+            _context5.prev = 5;
+            _context5.t0 = _context5["catch"](0);
+            console.error(_context5.t0);
+            throw new Error("[onProjectCreate]");
+
+          case 9:
+          case "end":
+            return _context5.stop();
+        }
+      }
+    }, _callee5, null, [[0, 5]]);
+  }));
+
+  return function (_x9, _x10) {
+    return _ref5.apply(this, arguments);
+  };
+}());
+exports.onProjectCreate = onProjectCreate;
+var onProjectDelete = functions.firestore.document('projects/{projectId}').onDelete( /*#__PURE__*/function () {
+  var _ref6 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6(doc, context) {
+    return regeneratorRuntime.wrap(function _callee6$(_context6) {
+      while (1) {
+        switch (_context6.prev = _context6.next) {
+          case 0:
+            _context6.prev = 0;
+            _context6.next = 3;
+            return _services.AlgoliaSearch.removeIDFromIndex(doc.uid, 'projects');
+
+          case 3:
+            _context6.next = 9;
+            break;
+
+          case 5:
+            _context6.prev = 5;
+            _context6.t0 = _context6["catch"](0);
+            console.error(_context6.t0);
+            throw new Error("[onProjectDelete]");
+
+          case 9:
+          case "end":
+            return _context6.stop();
+        }
+      }
+    }, _callee6, null, [[0, 5]]);
+  }));
+
+  return function (_x11, _x12) {
+    return _ref6.apply(this, arguments);
+  };
+}()); // ----------------------------------------------------
 // export const helloWorld = functions.https.onRequest((request, response) => {
 //  response.send("Hello from Firebase!");
 // });
+
+exports.onProjectDelete = onProjectDelete;

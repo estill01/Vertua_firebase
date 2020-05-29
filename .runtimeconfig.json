@@ -1,8 +1,8 @@
 {
   "algolia": {
+    "app_id": "V92WMGBFNB",
     "admin_key": "386efdd0ef107c4381b60bf75cf34b8a",
-    "search_key": "65af4d2767e4e96c5518fe70b88ba5cb",
-    "app_id": "V92WMGBFNB"
+    "search_key": "65af4d2767e4e96c5518fe70b88ba5cb"
   },
   "sendgrid": {
     "api_key": "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"
