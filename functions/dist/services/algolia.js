@@ -13,6 +13,8 @@ var _algoliasearch = _interopRequireDefault(require("algoliasearch"));
 
 var _requesterNodeHttp = require("@algolia/requester-node-http");
 
+var _lodash = require("lodash");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
@@ -37,154 +39,128 @@ functions.config().algolia.app_id, functions.config().algolia.admin_key, {
 AlgoliaSearch.index = {};
 AlgoliaSearch.index.users = AlgoliaSearch.client.initIndex('users');
 AlgoliaSearch.index.users.setSettings({
-  searchableAttributes: ['displayName', 'createdAt', 'uid']
+  searchableAttributes: ['displayName', 'createdAt', 'uid'],
+  attributesToRetrieve: ['displayName', 'createdAt', 'uid', 'photoURL']
 });
 AlgoliaSearch.index.projects = AlgoliaSearch.client.initIndex('projects');
 AlgoliaSearch.index.projects.setSettings({
-  searchableAttributes: ['name', 'description', 'creator', 'createdAt', 'uid']
-});
-
-function _buildDocFromFirebaseRecord(_x, _x2) {
-  return _buildDocFromFirebaseRecord2.apply(this, arguments);
-} // -------------------------------
+  searchableAttributes: ['name', 'description', 'creator', 'createdAt', 'uid'],
+  attributesToRetrieve: ['name', 'description', 'creator', 'createdAt', 'uid']
+}); // async function _buildDocFromFirebaseRecord(record, searchIndex) {
+// 	console.log("[_buildDocFromFirebaseRecord] START")
+// 	// console.log("doc: ", doc)
+// 	
+// 	// _fieldsProto<Map<Map>> = {
+// 	// 	key: { type: value },
+// 	// 	key: { type: value },
+// 	// }
+//
+// 	throw new Error("TEMPORARY -- Need to revamp '_buildDocFromFirebaseRecord'")
+//
+// 	// -- TEMPORAR --
+// 	// const doc = {}
+// 	// const settings = await AlgoliaSearch.index[searchIndex].getSettings()
+// 	// const attrsArr = union(settings.searchableAttributes, settings.attributesToRetrieve)
+//   //
+// 	// attrsArr.forEach((attr) => { 
+// 	// 	let arr = Object.values(record._fieldsProto[attr]) 
+// 	// 	if (arr.length > 0 && arr.length < 2) { doc[attr] = arr[0] }
+// 	// 	else { doc[attr] = arr }
+// 	// })
+//   //
+// 	// doc.objectID = record._fieldsProto.uid.stringValue
+//   //
+// 	// console.log("[_buildDocFromFirebaseRecord] END")
+//   //
+// 	// return doc
+// }
+// -------------------------------
 // 	Utils
 // -------------------------------
 
-
-function _buildDocFromFirebaseRecord2() {
-  _buildDocFromFirebaseRecord2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(record, searchIndex) {
-    var doc, settings, attrsArr;
-    return regeneratorRuntime.wrap(function _callee3$(_context3) {
-      while (1) {
-        switch (_context3.prev = _context3.next) {
-          case 0:
-            console.log("[_buildDocFromFirebaseRecord] START");
-            doc = {};
-            _context3.next = 4;
-            return AlgoliaSearch.index[searchIndex].getSettings();
-
-          case 4:
-            settings = _context3.sent;
-            attrsArr = settings.searchableAttributes;
-            attrsArr.forEach(function (attr) {
-              var arr = Object.values(record._fieldsProto[attr]); // array
-
-              if (arr.length > 0 && arr.length < 2) {
-                doc[attr] = arr[0];
-              } else {
-                doc[attr] = arr;
-              }
-            }); // _fieldsProto<Map<Map>> = {
-            // 	key: { type: value },
-            // 	key: { type: value },
-            // }
-
-            doc.objectID = record._fieldsProto.uid.stringValue; // console.log("[_buildDocFromFirebaseRecord] record._fieldsProto:", record._fieldsProto)
-            // console.log("[_buildDocFromFirebaseRecord] record._fieldsProto.uid:", record._fieldsProto.uid)
-            // console.log("[_buildDocFromFirebaseRecord] settings:", settings)
-            // console.log("[_buildDocFromFirebaseRecord] attrsArr:", attrsArr)
-            // console.log("[_buildDocFromFirebaseRecord] doc: ", doc)
-            // console.log("[_buildDocFromFirebaseRecord] doc.objectID: ", doc.objectID)
-
-            console.log("[_buildDocFromFirebaseRecord] END");
-            return _context3.abrupt("return", doc);
-
-          case 10:
-          case "end":
-            return _context3.stop();
-        }
-      }
-    }, _callee3);
-  }));
-  return _buildDocFromFirebaseRecord2.apply(this, arguments);
-}
-
 AlgoliaSearch.addDocToIndex = /*#__PURE__*/function () {
   var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(doc, index) {
-    var _result;
-
+    var result;
     return regeneratorRuntime.wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
             console.log("[addDocToIndex] START");
             console.log("[addDocToIndex] Using index:", AlgoliaSearch.index[index].indexName);
-            console.log("[addDocToIndex] doc._fieldsProto:", doc._fieldsProto);
-            console.log("[addDocToIndex] doc._fieldsProto.uid:", doc._fieldsProto.uid);
-            console.log("[addDocToIndex] doc._fieldsProto.uid.stringValue:", doc._fieldsProto.uid.stringValue);
-            _context.next = 7;
-            return _buildDocFromFirebaseRecord(doc, index);
+            console.log("[addDocToIndex] doc:", doc); // console.log("[addDocToIndex] doc._fieldsProto:", doc._fieldsProto)
+            // doc = await _buildDocFromFirebaseRecord(doc,index)
 
-          case 7:
-            doc = _context.sent;
-            _context.prev = 8;
-            _context.next = 11;
+            doc.objectID = doc.uid;
+            _context.prev = 4;
+            _context.next = 7;
             return AlgoliaSearch.index[index].saveObject(doc);
 
-          case 11:
-            _result = _context.sent;
-            console.log("[addDocToIndex] result: ", _result);
+          case 7:
+            result = _context.sent;
+            console.log("[addDocToIndex] result: ", result);
             console.log("[addDocToIndex] END");
-            _context.next = 20;
+            _context.next = 16;
             break;
 
-          case 16:
-            _context.prev = 16;
-            _context.t0 = _context["catch"](8);
+          case 12:
+            _context.prev = 12;
+            _context.t0 = _context["catch"](4);
             console.error(_context.t0);
             throw new Error("[AlgoliaSearch.addDocToIndex] ");
 
-          case 20:
+          case 16:
             return _context.abrupt("return", result);
 
-          case 21:
+          case 17:
           case "end":
             return _context.stop();
         }
       }
-    }, _callee, null, [[8, 16]]);
+    }, _callee, null, [[4, 12]]);
   }));
 
-  return function (_x3, _x4) {
+  return function (_x, _x2) {
     return _ref.apply(this, arguments);
   };
 }();
 
 AlgoliaSearch.removeIDFromIndex = /*#__PURE__*/function () {
   var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(id, index) {
-    var _result2;
-
+    var result;
     return regeneratorRuntime.wrap(function _callee2$(_context2) {
       while (1) {
         switch (_context2.prev = _context2.next) {
           case 0:
-            _context2.prev = 0;
-            _context2.next = 3;
+            console.log("[AlgoliaSearch.removeIDFromIndex]");
+            console.log("[AlgoliaSearch.removeIDFromIndex] id: ", id);
+            console.log("[AlgoliaSearch.removeIDFromIndex] index: ", index);
+            _context2.prev = 3;
+            _context2.next = 6;
             return AlgoliaSearch.index[index].deleteObject(id);
 
-          case 3:
-            _result2 = _context2.sent;
-            _context2.next = 10;
+          case 6:
+            result = _context2.sent;
+            _context2.next = 13;
             break;
 
-          case 6:
-            _context2.prev = 6;
-            _context2.t0 = _context2["catch"](0);
+          case 9:
+            _context2.prev = 9;
+            _context2.t0 = _context2["catch"](3);
             console.error(_context2.t0);
             throw new Error("[AlgoliaSearch.removeIDFromIndex]");
 
-          case 10:
+          case 13:
             return _context2.abrupt("return", result);
 
-          case 11:
+          case 14:
           case "end":
             return _context2.stop();
         }
       }
-    }, _callee2, null, [[0, 6]]);
+    }, _callee2, null, [[3, 9]]);
   }));
 
-  return function (_x5, _x6) {
+  return function (_x3, _x4) {
     return _ref2.apply(this, arguments);
   };
 }();

@@ -48,7 +48,10 @@ export const onAccountDelete = functions.auth.
 // -----------------------
 export const onUserCreate = functions.firestore.
 	document('users/{userId}')
-	.onCreate(async (doc, context) => {
+	.onCreate(async (snapshot, context) => {
+		// this is also a QueryDocumentSnapshot ; 
+		// should do 
+		let doc = await snapshot.data()
 		try { await AlgoliaSearch.addDocToIndex(doc, 'users') }
 		catch (err) { 
 			console.error(err)
@@ -59,7 +62,16 @@ export const onUserCreate = functions.firestore.
 export const onUserDelete = functions.firestore.
 	document('users/{userId}')
 	.onDelete(async (doc, context) => {
-		try { await AlgoliaSearch.removeIDFromIndex(doc.uid, 'users') }
+		// what's actually get passed to 'onDelete()' (?)
+		// QueryDocumentSnapshot
+		console.log("[onUserDelete] START")
+		console.log("[onUserDelete] doc: ", doc) // <QueryDocumentSnapshot>
+		// let data = await doc.data()
+		// data.uid
+		let uid = await doc.get('uid')
+		console.log("[onUserDelete] uid: ", uid) // <QueryDocumentSnapshot>
+
+		try { await AlgoliaSearch.removeIDFromIndex(uid, 'users') }
 		catch (err) { 
 			console.error(err)
 			throw new Error("[onUserDelete]")}

@@ -1,6 +1,7 @@
 import * as functions from 'firebase-functions'
 import Algolia from 'algoliasearch'
 import { createNodeHttpRequester } from '@algolia/requester-node-http'
+import { union } from 'lodash'
 
 // -------------------------------
 // 	Core
@@ -24,7 +25,13 @@ AlgoliaSearch.index.users.setSettings({
   	'displayName',
 		'createdAt',
   	'uid',
-	]
+	],
+	attributesToRetrieve: [
+  	'displayName',
+		'createdAt',
+  	'uid',
+		'photoURL',
+	],
 })
 
 AlgoliaSearch.index.projects = AlgoliaSearch.client.initIndex('projects')
@@ -35,40 +42,45 @@ AlgoliaSearch.index.projects.setSettings({
 		'creator',
 		'createdAt',
 		'uid',
-	]
+	],
+	attributesToRetrieve: [
+  	'name',
+  	'description',
+		'creator',
+		'createdAt',
+		'uid',
+	],
+
 })
 
-async function _buildDocFromFirebaseRecord(record, searchIndex) {
-
-	console.log("[_buildDocFromFirebaseRecord] START")
-	
-	const doc = {}
-	const settings = await AlgoliaSearch.index[searchIndex].getSettings()
-	const attrsArr = settings.searchableAttributes
-	attrsArr.forEach((attr) => { 
-		let arr = Object.values(record._fieldsProto[attr]) // array
-		if (arr.length > 0 && arr.length < 2) { doc[attr] = arr[0] }
-		else { doc[attr] = arr }
-	})
-
-	// _fieldsProto<Map<Map>> = {
-	// 	key: { type: value },
-	// 	key: { type: value },
-	// }
-
-	doc.objectID = record._fieldsProto.uid.stringValue
-
-	// console.log("[_buildDocFromFirebaseRecord] record._fieldsProto:", record._fieldsProto)
-	// console.log("[_buildDocFromFirebaseRecord] record._fieldsProto.uid:", record._fieldsProto.uid)
-	// console.log("[_buildDocFromFirebaseRecord] settings:", settings)
-	// console.log("[_buildDocFromFirebaseRecord] attrsArr:", attrsArr)
-	// console.log("[_buildDocFromFirebaseRecord] doc: ", doc)
-	// console.log("[_buildDocFromFirebaseRecord] doc.objectID: ", doc.objectID)
-
-	console.log("[_buildDocFromFirebaseRecord] END")
-
-	return doc
-}
+// async function _buildDocFromFirebaseRecord(record, searchIndex) {
+// 	console.log("[_buildDocFromFirebaseRecord] START")
+// 	// console.log("doc: ", doc)
+// 	
+// 	// _fieldsProto<Map<Map>> = {
+// 	// 	key: { type: value },
+// 	// 	key: { type: value },
+// 	// }
+//
+// 	throw new Error("TEMPORARY -- Need to revamp '_buildDocFromFirebaseRecord'")
+//
+// 	// -- TEMPORAR --
+// 	// const doc = {}
+// 	// const settings = await AlgoliaSearch.index[searchIndex].getSettings()
+// 	// const attrsArr = union(settings.searchableAttributes, settings.attributesToRetrieve)
+//   //
+// 	// attrsArr.forEach((attr) => { 
+// 	// 	let arr = Object.values(record._fieldsProto[attr]) 
+// 	// 	if (arr.length > 0 && arr.length < 2) { doc[attr] = arr[0] }
+// 	// 	else { doc[attr] = arr }
+// 	// })
+//   //
+// 	// doc.objectID = record._fieldsProto.uid.stringValue
+//   //
+// 	// console.log("[_buildDocFromFirebaseRecord] END")
+//   //
+// 	// return doc
+// }
 
 // -------------------------------
 // 	Utils
@@ -76,14 +88,16 @@ async function _buildDocFromFirebaseRecord(record, searchIndex) {
 AlgoliaSearch.addDocToIndex = async (doc, index) => {
 	console.log("[addDocToIndex] START")
 	console.log("[addDocToIndex] Using index:", AlgoliaSearch.index[index].indexName)
-	console.log("[addDocToIndex] doc._fieldsProto:", doc._fieldsProto)
-	console.log("[addDocToIndex] doc._fieldsProto.uid:", doc._fieldsProto.uid)
-	console.log("[addDocToIndex] doc._fieldsProto.uid.stringValue:", doc._fieldsProto.uid.stringValue)
+	console.log("[addDocToIndex] doc:", doc)
+	// console.log("[addDocToIndex] doc._fieldsProto:", doc._fieldsProto)
 
-	doc = await _buildDocFromFirebaseRecord(doc,index)
+	// doc = await _buildDocFromFirebaseRecord(doc,index)
 
+	doc.objectID = doc.uid
+
+	let result
 	try {
-		let result = await AlgoliaSearch.index[index].saveObject(doc)
+		result = await AlgoliaSearch.index[index].saveObject(doc)
 		console.log("[addDocToIndex] result: ", result)
 		console.log("[addDocToIndex] END")
 	} 
@@ -96,10 +110,13 @@ AlgoliaSearch.addDocToIndex = async (doc, index) => {
 }
 
 AlgoliaSearch.removeIDFromIndex = async (id, index) => {
-// async function removeIDFromIndex(id, index) {
-	// TODO search to see if that id is in index?
+	console.log("[AlgoliaSearch.removeIDFromIndex]")
+	console.log("[AlgoliaSearch.removeIDFromIndex] id: ", id)
+	console.log("[AlgoliaSearch.removeIDFromIndex] index: ", index)
+
+	let result
 	try {
-		let result = await AlgoliaSearch.index[index].deleteObject(id)
+		result = await AlgoliaSearch.index[index].deleteObject(id)
 	}
 	catch (err) {
 		console.error(err)

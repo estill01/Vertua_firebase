@@ -108,31 +108,37 @@ var onAccountDelete = functions.auth.user().onDelete( /*#__PURE__*/function () {
 
 exports.onAccountDelete = onAccountDelete;
 var onUserCreate = functions.firestore.document('users/{userId}').onCreate( /*#__PURE__*/function () {
-  var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(doc, context) {
+  var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(snapshot, context) {
+    var doc;
     return regeneratorRuntime.wrap(function _callee3$(_context3) {
       while (1) {
         switch (_context3.prev = _context3.next) {
           case 0:
-            _context3.prev = 0;
-            _context3.next = 3;
+            _context3.next = 2;
+            return snapshot.data();
+
+          case 2:
+            doc = _context3.sent;
+            _context3.prev = 3;
+            _context3.next = 6;
             return _services.AlgoliaSearch.addDocToIndex(doc, 'users');
 
-          case 3:
-            _context3.next = 9;
+          case 6:
+            _context3.next = 12;
             break;
 
-          case 5:
-            _context3.prev = 5;
-            _context3.t0 = _context3["catch"](0);
+          case 8:
+            _context3.prev = 8;
+            _context3.t0 = _context3["catch"](3);
             console.error(_context3.t0);
             throw new Error("[onUserCreate]");
 
-          case 9:
+          case 12:
           case "end":
             return _context3.stop();
         }
       }
-    }, _callee3, null, [[0, 5]]);
+    }, _callee3, null, [[3, 8]]);
   }));
 
   return function (_x5, _x6) {
@@ -142,30 +148,45 @@ var onUserCreate = functions.firestore.document('users/{userId}').onCreate( /*#_
 exports.onUserCreate = onUserCreate;
 var onUserDelete = functions.firestore.document('users/{userId}').onDelete( /*#__PURE__*/function () {
   var _ref4 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4(doc, context) {
+    var uid;
     return regeneratorRuntime.wrap(function _callee4$(_context4) {
       while (1) {
         switch (_context4.prev = _context4.next) {
           case 0:
-            _context4.prev = 0;
-            _context4.next = 3;
-            return _services.AlgoliaSearch.removeIDFromIndex(doc.uid, 'users');
+            // what's actually get passed to 'onDelete()' (?)
+            // QueryDocumentSnapshot
+            console.log("[onUserDelete] START");
+            console.log("[onUserDelete] doc: ", doc); // <QueryDocumentSnapshot>
+            // let data = await doc.data()
+            // data.uid
 
-          case 3:
+            _context4.next = 4;
+            return doc.get('uid');
+
+          case 4:
+            uid = _context4.sent;
+            console.log("[onUserDelete] uid: ", uid); // <QueryDocumentSnapshot>
+
+            _context4.prev = 6;
             _context4.next = 9;
+            return _services.AlgoliaSearch.removeIDFromIndex(uid, 'users');
+
+          case 9:
+            _context4.next = 15;
             break;
 
-          case 5:
-            _context4.prev = 5;
-            _context4.t0 = _context4["catch"](0);
+          case 11:
+            _context4.prev = 11;
+            _context4.t0 = _context4["catch"](6);
             console.error(_context4.t0);
             throw new Error("[onUserDelete]");
 
-          case 9:
+          case 15:
           case "end":
             return _context4.stop();
         }
       }
-    }, _callee4, null, [[0, 5]]);
+    }, _callee4, null, [[6, 11]]);
   }));
 
   return function (_x7, _x8) {
