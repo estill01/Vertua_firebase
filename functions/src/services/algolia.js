@@ -8,7 +8,6 @@ import { union } from 'lodash'
 // -------------------------------
 const AlgoliaSearch = {}
 AlgoliaSearch.client = Algolia(
-//const client = Algolia(
 	functions.config().algolia.app_id, 
 	functions.config().algolia.admin_key,
 	{ requester: createNodeHttpRequester() }
@@ -86,45 +85,31 @@ AlgoliaSearch.index.projects.setSettings({
 // 	Utils
 // -------------------------------
 AlgoliaSearch.addDocToIndex = async (doc, index) => {
-	console.log("[addDocToIndex] START")
-	console.log("[addDocToIndex] Using index:", AlgoliaSearch.index[index].indexName)
-	console.log("[addDocToIndex] doc:", doc)
-	// console.log("[addDocToIndex] doc._fieldsProto:", doc._fieldsProto)
-
-	// doc = await _buildDocFromFirebaseRecord(doc,index)
-
 	doc.objectID = doc.uid
 
-	let result
-	try {
-		result = await AlgoliaSearch.index[index].saveObject(doc)
-		console.log("[addDocToIndex] result: ", result)
-		console.log("[addDocToIndex] END")
-	} 
-	catch (err) {
-		console.error(err)
-		throw new Error("[AlgoliaSearch.addDocToIndex] ")
-	}
+	console.log("[AlgoliaSearch.addDocToIndex]")
+	console.log("index arg: ", index)
+	console.log("using index:", AlgoliaSearch.index[index].indexName)
+	console.log("doc:", doc)
 
-	return result
+	try {
+		let result = await AlgoliaSearch.index[index].saveObject(doc)
+		console.log("result: ", result)
+		return result
+	} 
+	catch (err) { throw new Error(err) }
 }
 
-AlgoliaSearch.removeIDFromIndex = async (id, index) => {
+AlgoliaSearch.removeDocFromIndex = async (doc, index) => {
 	console.log("[AlgoliaSearch.removeIDFromIndex]")
-	console.log("[AlgoliaSearch.removeIDFromIndex] id: ", id)
+	console.log("[AlgoliaSearch.removeIDFromIndex] id: ", doc.uid)
 	console.log("[AlgoliaSearch.removeIDFromIndex] index: ", index)
 
-	let result
 	try {
-		result = await AlgoliaSearch.index[index].deleteObject(id)
+		let result = await AlgoliaSearch.index[index].deleteObject(doc.uid)
+		return result
 	}
-	catch (err) {
-		console.error(err)
-		throw new Error("[AlgoliaSearch.removeIDFromIndex]")
-	}
-
-	return result
-	//return AlgoliaSearch.index[index].deleteObject(id)
+	catch (err) { throw new Error("[AlgoliaSearch.removeIDFromIndex]") }
 }
 
 

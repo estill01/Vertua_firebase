@@ -1,21 +1,17 @@
-
 		// PROJECTS
 		// -------------------------
 
 		match /projects/{projectId} {
-			allow read;
-			allow write; 
+			allow read: if request.auth.uid != null;
+			allow write: if request.auth.uid != null; 
+			allow delete: if request.auth.uid == resource.data.creatorId;
 		}
 
 		function isProject(doc) {
-			return 
-			doc.name is string &&
-			doc.description is string
+			return doc.size() == 4
+			&& doc.name is string
+			&& doc.description is string
+			&& doc.creatorId is string
+			&& doc.createdAt is string
 		}
-
-
-		/* match /approaches/{approachId} { */
-		/* 	approch to projectId */
-		/* } */
-
 

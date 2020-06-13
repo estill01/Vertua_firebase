@@ -1,15 +1,34 @@
 rules_version = '2';
 service cloud.firestore {
 	match /databases/{database}/documents {
+		// PROJECTS
+		// -------------------------
+
+		match /projects/{projectId} {
+			allow read: if requst.auth.uid != null;
+			allow write: if request.auth.uid != null; 
+			allow delete: if request.auth.uid == resource.data.creatorId;
+		}
+
+		function isProject(doc) {
+			return doc.size() == 4
+			&& doc.name is string
+			&& doc.description is string
+			&& doc.creatorId is string
+			&& doc.createdAt is string
+		}
+
+
 		// USERS
 		// ----------------------------
 		match /users/{userId} {
-			allow read: if isSelf(userId) || isPublic();
-			allow create: if request.auth.uid == userId && request.resource.data.createdAt == request.time;
+			allow read: if true;
 		}
 
 		function isUser(doc) {
 			return doc.size() == 3
+			&& doc.uid is string
+			&& doc.displayName is string 
 			&& doc.private is bool
 			&& doc.username is string
 			&& doc.avatar_url is string
@@ -18,6 +37,8 @@ service cloud.firestore {
 
 		//  UTILS 
 		// --------------------------
+
+
 		function requestor() { return request.auth }
 		function requestorEmail() { return requestor().token.email }
 		function requestorEmailIsVerified() { return requestor().token.email_verified }
@@ -30,6 +51,17 @@ service cloud.firestore {
 
 		function madeBySelf(uid) { return requestor().uid == existingData().creator.id }
 		function isPublic() { return existingData().isPrivate == false }
+
+		function belongsTo(userId) {
+			return request.auth.uid == userId;
+		}
+
+
+		/* function hasWritePermision(userId, itemId) { */
+		/* 	// get the item */
+		/* 	// get the ACL for the item */
+		/* 	// check if userId has write permissions on ACL */
+		/* } */
 
   }
 }

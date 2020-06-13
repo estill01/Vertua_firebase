@@ -20,8 +20,8 @@
 		}
 
 
-		function hasWritePermision(userId, itemId) {
-			// get the item
-			// get the ACL for the item
-			// check if userId has write permissions on ACL
-		}
+		/* function hasWritePermision(userId, itemId) { */
+		/* 	// get the item */
+		/* 	// get the ACL for the item */
+		/* 	// check if userId has write permissions on ACL */
+		/* } */

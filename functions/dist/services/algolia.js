@@ -29,8 +29,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 // 	Core
 // -------------------------------
 var AlgoliaSearch = {};
-AlgoliaSearch.client = (0, _algoliasearch["default"])( //const client = Algolia(
-functions.config().algolia.app_id, functions.config().algolia.admin_key, {
+AlgoliaSearch.client = (0, _algoliasearch["default"])(functions.config().algolia.app_id, functions.config().algolia.admin_key, {
   requester: (0, _requesterNodeHttp.createNodeHttpRequester)()
 }); // -------------------------------
 // 	Indexes
@@ -85,38 +84,31 @@ AlgoliaSearch.addDocToIndex = /*#__PURE__*/function () {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            console.log("[addDocToIndex] START");
-            console.log("[addDocToIndex] Using index:", AlgoliaSearch.index[index].indexName);
-            console.log("[addDocToIndex] doc:", doc); // console.log("[addDocToIndex] doc._fieldsProto:", doc._fieldsProto)
-            // doc = await _buildDocFromFirebaseRecord(doc,index)
-
             doc.objectID = doc.uid;
-            _context.prev = 4;
-            _context.next = 7;
+            console.log("[AlgoliaSearch.addDocToIndex]");
+            console.log("index arg: ", index);
+            console.log("using index:", AlgoliaSearch.index[index].indexName);
+            console.log("doc:", doc);
+            _context.prev = 5;
+            _context.next = 8;
             return AlgoliaSearch.index[index].saveObject(doc);
 
-          case 7:
+          case 8:
             result = _context.sent;
-            console.log("[addDocToIndex] result: ", result);
-            console.log("[addDocToIndex] END");
-            _context.next = 16;
-            break;
-
-          case 12:
-            _context.prev = 12;
-            _context.t0 = _context["catch"](4);
-            console.error(_context.t0);
-            throw new Error("[AlgoliaSearch.addDocToIndex] ");
-
-          case 16:
+            console.log("result: ", result);
             return _context.abrupt("return", result);
 
-          case 17:
+          case 13:
+            _context.prev = 13;
+            _context.t0 = _context["catch"](5);
+            throw new Error(_context.t0);
+
+          case 16:
           case "end":
             return _context.stop();
         }
       }
-    }, _callee, null, [[4, 12]]);
+    }, _callee, null, [[5, 13]]);
   }));
 
   return function (_x, _x2) {
@@ -124,40 +116,35 @@ AlgoliaSearch.addDocToIndex = /*#__PURE__*/function () {
   };
 }();
 
-AlgoliaSearch.removeIDFromIndex = /*#__PURE__*/function () {
-  var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(id, index) {
+AlgoliaSearch.removeDocFromIndex = /*#__PURE__*/function () {
+  var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(doc, index) {
     var result;
     return regeneratorRuntime.wrap(function _callee2$(_context2) {
       while (1) {
         switch (_context2.prev = _context2.next) {
           case 0:
             console.log("[AlgoliaSearch.removeIDFromIndex]");
-            console.log("[AlgoliaSearch.removeIDFromIndex] id: ", id);
+            console.log("[AlgoliaSearch.removeIDFromIndex] id: ", doc.uid);
             console.log("[AlgoliaSearch.removeIDFromIndex] index: ", index);
             _context2.prev = 3;
             _context2.next = 6;
-            return AlgoliaSearch.index[index].deleteObject(id);
+            return AlgoliaSearch.index[index].deleteObject(doc.uid);
 
           case 6:
             result = _context2.sent;
-            _context2.next = 13;
-            break;
+            return _context2.abrupt("return", result);
 
-          case 9:
-            _context2.prev = 9;
+          case 10:
+            _context2.prev = 10;
             _context2.t0 = _context2["catch"](3);
-            console.error(_context2.t0);
             throw new Error("[AlgoliaSearch.removeIDFromIndex]");
 
           case 13:
-            return _context2.abrupt("return", result);
-
-          case 14:
           case "end":
             return _context2.stop();
         }
       }
-    }, _callee2, null, [[3, 9]]);
+    }, _callee2, null, [[3, 10]]);
   }));
 
   return function (_x3, _x4) {

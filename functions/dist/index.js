@@ -15,6 +15,8 @@ var functions = _interopRequireWildcard(require("firebase-functions"));
 
 var _services = require("./services");
 
+var _lodash = require("lodash");
+
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -34,29 +36,21 @@ var onAccountCreate = functions.auth.user().onCreate( /*#__PURE__*/function () {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
-            user = {
-              uid: userRecord.uid,
-              displayName: userRecord.displayName || '',
-              photoURL: userRecord.photoURL || '',
-              visibilty: 'public',
-              createdAt: userRecord.metadata.creationTime
-            }; // TODO check if anonymous ; if so, add to 'anonymousUsers' collection
-
+            user = buildUserDoc(userRecord);
             _context.prev = 1;
             _context.next = 4;
             return app.firestore().collection('users').doc(userRecord.uid).set(user);
 
           case 4:
-            _context.next = 10;
+            _context.next = 9;
             break;
 
           case 6:
             _context.prev = 6;
             _context.t0 = _context["catch"](1);
-            console.error(_context.t0);
             throw new Error("[onAccountCreate]");
 
-          case 10:
+          case 9:
           case "end":
             return _context.stop();
         }
@@ -71,7 +65,6 @@ var onAccountCreate = functions.auth.user().onCreate( /*#__PURE__*/function () {
 exports.onAccountCreate = onAccountCreate;
 var onAccountDelete = functions.auth.user().onDelete( /*#__PURE__*/function () {
   var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(userRecord, context) {
-    var resp;
     return regeneratorRuntime.wrap(function _callee2$(_context2) {
       while (1) {
         switch (_context2.prev = _context2.next) {
@@ -81,22 +74,20 @@ var onAccountDelete = functions.auth.user().onDelete( /*#__PURE__*/function () {
             return app.firestore().collection('users').doc(userRecord.uid)["delete"]();
 
           case 3:
-            resp = _context2.sent;
-            _context2.next = 10;
+            _context2.next = 8;
             break;
 
-          case 6:
-            _context2.prev = 6;
+          case 5:
+            _context2.prev = 5;
             _context2.t0 = _context2["catch"](0);
-            console.error(_context2.t0);
-            throw new Error("[onAccountDelete] Failed to delete user");
+            throw new Error("[onAccountDelete]");
 
-          case 10:
+          case 8:
           case "end":
             return _context2.stop();
         }
       }
-    }, _callee2, null, [[0, 6]]);
+    }, _callee2, null, [[0, 5]]);
   }));
 
   return function (_x3, _x4) {
@@ -109,36 +100,21 @@ var onAccountDelete = functions.auth.user().onDelete( /*#__PURE__*/function () {
 exports.onAccountDelete = onAccountDelete;
 var onUserCreate = functions.firestore.document('users/{userId}').onCreate( /*#__PURE__*/function () {
   var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(snapshot, context) {
-    var doc;
     return regeneratorRuntime.wrap(function _callee3$(_context3) {
       while (1) {
         switch (_context3.prev = _context3.next) {
           case 0:
-            _context3.next = 2;
-            return snapshot.data();
+            // onCreate : <QueryDocumentSnapshot>
+            // handler : function(snapshot: <QueryDocumentSnapshot>, context: <EventContext>) : PromiseLike<any>
+            console.log("[onUserCreate]");
+            intakePipeline(snapshot, 'users');
 
           case 2:
-            doc = _context3.sent;
-            _context3.prev = 3;
-            _context3.next = 6;
-            return _services.AlgoliaSearch.addDocToIndex(doc, 'users');
-
-          case 6:
-            _context3.next = 12;
-            break;
-
-          case 8:
-            _context3.prev = 8;
-            _context3.t0 = _context3["catch"](3);
-            console.error(_context3.t0);
-            throw new Error("[onUserCreate]");
-
-          case 12:
           case "end":
             return _context3.stop();
         }
       }
-    }, _callee3, null, [[3, 8]]);
+    }, _callee3);
   }));
 
   return function (_x5, _x6) {
@@ -147,46 +123,20 @@ var onUserCreate = functions.firestore.document('users/{userId}').onCreate( /*#_
 }());
 exports.onUserCreate = onUserCreate;
 var onUserDelete = functions.firestore.document('users/{userId}').onDelete( /*#__PURE__*/function () {
-  var _ref4 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4(doc, context) {
-    var uid;
+  var _ref4 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4(snapshot, context) {
     return regeneratorRuntime.wrap(function _callee4$(_context4) {
       while (1) {
         switch (_context4.prev = _context4.next) {
           case 0:
-            // what's actually get passed to 'onDelete()' (?)
-            // QueryDocumentSnapshot
-            console.log("[onUserDelete] START");
-            console.log("[onUserDelete] doc: ", doc); // <QueryDocumentSnapshot>
-            // let data = await doc.data()
-            // data.uid
+            console.log("[onUserDelete]");
+            deletionPipeline(snapshot, 'users');
 
-            _context4.next = 4;
-            return doc.get('uid');
-
-          case 4:
-            uid = _context4.sent;
-            console.log("[onUserDelete] uid: ", uid); // <QueryDocumentSnapshot>
-
-            _context4.prev = 6;
-            _context4.next = 9;
-            return _services.AlgoliaSearch.removeIDFromIndex(uid, 'users');
-
-          case 9:
-            _context4.next = 15;
-            break;
-
-          case 11:
-            _context4.prev = 11;
-            _context4.t0 = _context4["catch"](6);
-            console.error(_context4.t0);
-            throw new Error("[onUserDelete]");
-
-          case 15:
+          case 2:
           case "end":
             return _context4.stop();
         }
       }
-    }, _callee4, null, [[6, 11]]);
+    }, _callee4);
   }));
 
   return function (_x7, _x8) {
@@ -198,31 +148,20 @@ var onUserDelete = functions.firestore.document('users/{userId}').onDelete( /*#_
 
 exports.onUserDelete = onUserDelete;
 var onProjectCreate = functions.firestore.document('projects/{projectId}').onCreate( /*#__PURE__*/function () {
-  var _ref5 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(doc, context) {
+  var _ref5 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(snapshot, context) {
     return regeneratorRuntime.wrap(function _callee5$(_context5) {
       while (1) {
         switch (_context5.prev = _context5.next) {
           case 0:
-            _context5.prev = 0;
-            _context5.next = 3;
-            return _services.AlgoliaSearch.addDocToIndex(doc, 'projects');
+            console.log("[onProjectCreate]");
+            intakePipeline(snapshot, 'projects');
 
-          case 3:
-            _context5.next = 9;
-            break;
-
-          case 5:
-            _context5.prev = 5;
-            _context5.t0 = _context5["catch"](0);
-            console.error(_context5.t0);
-            throw new Error("[onProjectCreate]");
-
-          case 9:
+          case 2:
           case "end":
             return _context5.stop();
         }
       }
-    }, _callee5, null, [[0, 5]]);
+    }, _callee5);
   }));
 
   return function (_x9, _x10) {
@@ -231,39 +170,315 @@ var onProjectCreate = functions.firestore.document('projects/{projectId}').onCre
 }());
 exports.onProjectCreate = onProjectCreate;
 var onProjectDelete = functions.firestore.document('projects/{projectId}').onDelete( /*#__PURE__*/function () {
-  var _ref6 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6(doc, context) {
+  var _ref6 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6(snapshot, context) {
     return regeneratorRuntime.wrap(function _callee6$(_context6) {
       while (1) {
         switch (_context6.prev = _context6.next) {
           case 0:
-            _context6.prev = 0;
-            _context6.next = 3;
-            return _services.AlgoliaSearch.removeIDFromIndex(doc.uid, 'projects');
+            console.log("[onProjectDelete]");
+            deletionPipeline(snapshot, 'projects');
 
-          case 3:
-            _context6.next = 9;
-            break;
-
-          case 5:
-            _context6.prev = 5;
-            _context6.t0 = _context6["catch"](0);
-            console.error(_context6.t0);
-            throw new Error("[onProjectDelete]");
-
-          case 9:
+          case 2:
           case "end":
             return _context6.stop();
         }
       }
-    }, _callee6, null, [[0, 5]]);
+    }, _callee6);
   }));
 
   return function (_x11, _x12) {
     return _ref6.apply(this, arguments);
   };
-}()); // ----------------------------------------------------
-// export const helloWorld = functions.https.onRequest((request, response) => {
-//  response.send("Hello from Firebase!");
-// });
+}()); // ===========================
+// 	Utils 
+// ===========================
+// ---------------------------
+// 	Utils : Intake Pipeline
+// ---------------------------
 
 exports.onProjectDelete = onProjectDelete;
+
+function intakePipeline(_x13, _x14) {
+  return _intakePipeline.apply(this, arguments);
+}
+
+function _intakePipeline() {
+  _intakePipeline = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee7(snapshot, searchIndex) {
+    var docRef;
+    return regeneratorRuntime.wrap(function _callee7$(_context7) {
+      while (1) {
+        switch (_context7.prev = _context7.next) {
+          case 0:
+            if (!(0, _lodash.isNil)(snapshot)) {
+              _context7.next = 2;
+              break;
+            }
+
+            throw new Error('`intakePipeline()` parameter `snapshot` cannot be null');
+
+          case 2:
+            if (!(0, _lodash.isNil)(searchIndex)) {
+              _context7.next = 4;
+              break;
+            }
+
+            throw new Error('`intakePipeline()` parameter `searchIndex` cannot be null');
+
+          case 4:
+            // TODO Check: doc uid != item uid, item uid = doc uid
+            docRef = snapshot.ref; // <DocumentReference>
+
+            _context7.next = 7;
+            return addTimestampToDoc(docRef, searchIndex);
+
+          case 7:
+            if (!(searchIndex !== 'users')) {
+              _context7.next = 10;
+              break;
+            }
+
+            _context7.next = 10;
+            return addCreatorToDoc(docRef);
+
+          case 10:
+            // TODO snapshot does not have the timestamp on it... <=========== FIXING
+            addDocToSearchIndex(docRef, searchIndex);
+
+          case 11:
+          case "end":
+            return _context7.stop();
+        }
+      }
+    }, _callee7);
+  }));
+  return _intakePipeline.apply(this, arguments);
+}
+
+function addTimestampToDoc(_x15, _x16) {
+  return _addTimestampToDoc.apply(this, arguments);
+}
+
+function _addTimestampToDoc() {
+  _addTimestampToDoc = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee8(docRef, collection) {
+    return regeneratorRuntime.wrap(function _callee8$(_context8) {
+      while (1) {
+        switch (_context8.prev = _context8.next) {
+          case 0:
+            _context8.prev = 0;
+            return _context8.abrupt("return", docRef.set({
+              createdAt: Date.now()
+            }, {
+              merge: true
+            }));
+
+          case 4:
+            _context8.prev = 4;
+            _context8.t0 = _context8["catch"](0);
+            throw new Error(_context8.t0);
+
+          case 7:
+          case "end":
+            return _context8.stop();
+        }
+      }
+    }, _callee8, null, [[0, 4]]);
+  }));
+  return _addTimestampToDoc.apply(this, arguments);
+}
+
+function addCreatorToDoc(_x17) {
+  return _addCreatorToDoc.apply(this, arguments);
+}
+
+function _addCreatorToDoc() {
+  _addCreatorToDoc = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee9(docRef) {
+    var snapshot, data, creator;
+    return regeneratorRuntime.wrap(function _callee9$(_context9) {
+      while (1) {
+        switch (_context9.prev = _context9.next) {
+          case 0:
+            console.log('[addCreatorToSnapshot]');
+            _context9.next = 3;
+            return docRef.get();
+
+          case 3:
+            snapshot = _context9.sent;
+            data = snapshot.data();
+            creator = null; // TODO *** Need to get the 'doc.creator.uid' pattern implemented in client and Security Rules ***
+
+            _context9.prev = 6;
+            _context9.next = 9;
+            return getUserRecord(data.creator.uid);
+
+          case 9:
+            creator = _context9.sent;
+            _context9.next = 15;
+            break;
+
+          case 12:
+            _context9.prev = 12;
+            _context9.t0 = _context9["catch"](6);
+            throw new Error(_context9.t0);
+
+          case 15:
+            console.log('creator: ', creator); // TODO need to set values for anonymous users
+
+            _context9.prev = 16;
+            _context9.next = 19;
+            return docRef.set({
+              creator: {
+                displayName: creator.displayName || '',
+                photoURL: creator.photoURL || ''
+              }
+            }, {
+              mergeFields: ['creator.displayName', 'creator.photoURL']
+            });
+
+          case 19:
+            _context9.next = 24;
+            break;
+
+          case 21:
+            _context9.prev = 21;
+            _context9.t1 = _context9["catch"](16);
+            throw new Error(_context9.t1);
+
+          case 24:
+          case "end":
+            return _context9.stop();
+        }
+      }
+    }, _callee9, null, [[6, 12], [16, 21]]);
+  }));
+  return _addCreatorToDoc.apply(this, arguments);
+}
+
+function addDocToSearchIndex(_x18, _x19) {
+  return _addDocToSearchIndex.apply(this, arguments);
+} // ---------------------------
+// 	Utils : Deletion Pipeline
+// ---------------------------
+
+
+function _addDocToSearchIndex() {
+  _addDocToSearchIndex = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee10(docRef, searchIndex) {
+    var snapshot;
+    return regeneratorRuntime.wrap(function _callee10$(_context10) {
+      while (1) {
+        switch (_context10.prev = _context10.next) {
+          case 0:
+            console.log("[addDocToSearchIndex]");
+            _context10.next = 3;
+            return docRef.get();
+
+          case 3:
+            snapshot = _context10.sent;
+            console.log("doc: ", snapshot.data());
+            _context10.prev = 5;
+
+            _services.AlgoliaSearch.addDocToIndex(snapshot.data(), searchIndex);
+
+            _context10.next = 12;
+            break;
+
+          case 9:
+            _context10.prev = 9;
+            _context10.t0 = _context10["catch"](5);
+            throw new Error(_context10.t0);
+
+          case 12:
+          case "end":
+            return _context10.stop();
+        }
+      }
+    }, _callee10, null, [[5, 9]]);
+  }));
+  return _addDocToSearchIndex.apply(this, arguments);
+}
+
+function deletionPipeline(snapshot, searchIndex) {
+  removeDocFromSearchIndex(snapshot.ref, searchIndex);
+}
+
+function removeDocFromSearchIndex(_x20, _x21) {
+  return _removeDocFromSearchIndex.apply(this, arguments);
+} // ---------------------------
+// 	Utils : User
+// ---------------------------
+
+
+function _removeDocFromSearchIndex() {
+  _removeDocFromSearchIndex = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee11(docRef, searchIndex) {
+    var snapshot;
+    return regeneratorRuntime.wrap(function _callee11$(_context11) {
+      while (1) {
+        switch (_context11.prev = _context11.next) {
+          case 0:
+            _context11.next = 2;
+            return docRef.get();
+
+          case 2:
+            snapshot = _context11.sent;
+            _context11.prev = 3;
+
+            _services.AlgoliaSearch.removeDocFromIndex(snapshot.data(), searchIndex);
+
+            _context11.next = 10;
+            break;
+
+          case 7:
+            _context11.prev = 7;
+            _context11.t0 = _context11["catch"](3);
+            throw new Error(_context11.t0);
+
+          case 10:
+          case "end":
+            return _context11.stop();
+        }
+      }
+    }, _callee11, null, [[3, 7]]);
+  }));
+  return _removeDocFromSearchIndex.apply(this, arguments);
+}
+
+function buildUserDoc(userRecord) {
+  return {
+    uid: userRecord.uid,
+    displayName: userRecord.displayName || '',
+    photoURL: userRecord.photoURL || '',
+    visibilty: 'public'
+  };
+}
+
+function getUserRecord(_x22) {
+  return _getUserRecord.apply(this, arguments);
+}
+
+function _getUserRecord() {
+  _getUserRecord = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee12(id) {
+    var docRef, snapshot;
+    return regeneratorRuntime.wrap(function _callee12$(_context12) {
+      while (1) {
+        switch (_context12.prev = _context12.next) {
+          case 0:
+            _context12.next = 2;
+            return app.firestore().collection('users').doc(id);
+
+          case 2:
+            docRef = _context12.sent;
+            _context12.next = 5;
+            return docRef.get();
+
+          case 5:
+            snapshot = _context12.sent;
+            return _context12.abrupt("return", snapshot.data());
+
+          case 7:
+          case "end":
+            return _context12.stop();
+        }
+      }
+    }, _callee12);
+  }));
+  return _getUserRecord.apply(this, arguments);
+}
