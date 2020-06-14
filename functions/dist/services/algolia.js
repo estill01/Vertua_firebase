@@ -114,37 +114,38 @@ AlgoliaSearch.addDocToIndex = /*#__PURE__*/function () {
   return function (_x, _x2) {
     return _ref.apply(this, arguments);
   };
-}();
+}(); // TODO Not working.
 
-AlgoliaSearch.removeDocFromIndex = /*#__PURE__*/function () {
-  var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(doc, index) {
+
+AlgoliaSearch.removeIdFromIndex = /*#__PURE__*/function () {
+  var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(id, index) {
     var result;
     return regeneratorRuntime.wrap(function _callee2$(_context2) {
       while (1) {
         switch (_context2.prev = _context2.next) {
           case 0:
             console.log("[AlgoliaSearch.removeIDFromIndex]");
-            console.log("[AlgoliaSearch.removeIDFromIndex] id: ", doc.uid);
-            console.log("[AlgoliaSearch.removeIDFromIndex] index: ", index);
-            _context2.prev = 3;
-            _context2.next = 6;
-            return AlgoliaSearch.index[index].deleteObject(doc.uid);
+            console.log("id: ", id); // id should be objectID ; so if it's not working maybe that's why.
 
-          case 6:
+            _context2.prev = 2;
+            _context2.next = 5;
+            return AlgoliaSearch.index[index].deleteObject(id);
+
+          case 5:
             result = _context2.sent;
             return _context2.abrupt("return", result);
 
-          case 10:
-            _context2.prev = 10;
-            _context2.t0 = _context2["catch"](3);
-            throw new Error("[AlgoliaSearch.removeIDFromIndex]");
+          case 9:
+            _context2.prev = 9;
+            _context2.t0 = _context2["catch"](2);
+            throw new Error(_context2.t0);
 
-          case 13:
+          case 12:
           case "end":
             return _context2.stop();
         }
       }
-    }, _callee2, null, [[3, 10]]);
+    }, _callee2, null, [[2, 9]]);
   }));
 
   return function (_x3, _x4) {

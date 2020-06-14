@@ -43,8 +43,10 @@ export const onUserDelete = functions.firestore.
 	document('users/{userId}')
 	.onDelete(async (snapshot, context) => {
 		console.log("[onUserDelete]")
-		deletionPipeline(snapshot, 'users')
+		console.log("context.params.userId: ", context.params.userId)
+		deletionPipeline(context.params.userId, 'users') 
 	}) 
+
 
 
 // -----------------------
@@ -61,7 +63,7 @@ export const onProjectDelete = functions.firestore.
 	document('projects/{projectId}')
 	.onDelete(async (snapshot, context) => {
 		console.log("[onProjectDelete]")
-		deletionPipeline(snapshot, 'projects')
+		deletionPipeline(context.params.projectId, 'projects')
 	})
 
 
@@ -132,15 +134,20 @@ async function addDocToSearchIndex(docRef, searchIndex) {
 // ---------------------------
 // 	Utils : Deletion Pipeline
 // ---------------------------
-function deletionPipeline(snapshot, searchIndex) {
-	removeDocFromSearchIndex(snapshot.ref, searchIndex)
+function deletionPipeline(id, searchIndex) {
+	removeIdFromSearchIndex(id, searchIndex)
 }
 
-async function removeDocFromSearchIndex(docRef, searchIndex) {
-	let snapshot = await docRef.get()
-	try { AlgoliaSearch.removeDocFromIndex(snapshot.data(), searchIndex) }
+async function removeIdFromSearchIndex(id, searchIndex) {
+	try { AlgoliaSearch.removeIdFromIndex(id, searchIndex) }
 	catch (err) { throw new Error(err) }
 }
+
+// async function removeDocFromSearchIndex(docRef, searchIndex) {
+// 	let snapshot = await docRef.get()
+// 	try { AlgoliaSearch.removeDocFromIndex(snapshot.data(), searchIndex) }
+// 	catch (err) { throw new Error(err) }
+// }
 
 
 // ---------------------------

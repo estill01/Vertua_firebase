@@ -100,17 +100,16 @@ AlgoliaSearch.addDocToIndex = async (doc, index) => {
 	catch (err) { throw new Error(err) }
 }
 
-AlgoliaSearch.removeDocFromIndex = async (doc, index) => {
+// TODO Not working.
+AlgoliaSearch.removeIdFromIndex = async (id, index) => {
 	console.log("[AlgoliaSearch.removeIDFromIndex]")
-	console.log("[AlgoliaSearch.removeIDFromIndex] id: ", doc.uid)
-	console.log("[AlgoliaSearch.removeIDFromIndex] index: ", index)
-
+	console.log("id: ", id)
+	// id should be objectID ; so if it's not working maybe that's why.
 	try {
-		let result = await AlgoliaSearch.index[index].deleteObject(doc.uid)
+		let result = await AlgoliaSearch.index[index].deleteObject(id)
 		return result
 	}
-	catch (err) { throw new Error("[AlgoliaSearch.removeIDFromIndex]") }
+	catch (err) { throw new Error(err) }
 }
-
 
 export default AlgoliaSearch

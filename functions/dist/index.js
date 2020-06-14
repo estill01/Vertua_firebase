@@ -129,9 +129,10 @@ var onUserDelete = functions.firestore.document('users/{userId}').onDelete( /*#_
         switch (_context4.prev = _context4.next) {
           case 0:
             console.log("[onUserDelete]");
-            deletionPipeline(snapshot, 'users');
+            console.log("context.params.userId: ", context.params.userId);
+            deletionPipeline(context.params.userId, 'users');
 
-          case 2:
+          case 3:
           case "end":
             return _context4.stop();
         }
@@ -176,7 +177,7 @@ var onProjectDelete = functions.firestore.document('projects/{projectId}').onDel
         switch (_context6.prev = _context6.next) {
           case 0:
             console.log("[onProjectDelete]");
-            deletionPipeline(snapshot, 'projects');
+            deletionPipeline(context.params.projectId, 'projects');
 
           case 2:
           case "end":
@@ -241,7 +242,6 @@ function _intakePipeline() {
             return addCreatorToDoc(docRef);
 
           case 10:
-            // TODO snapshot does not have the timestamp on it... <=========== FIXING
             addDocToSearchIndex(docRef, searchIndex);
 
           case 11:
@@ -396,49 +396,48 @@ function _addDocToSearchIndex() {
   return _addDocToSearchIndex.apply(this, arguments);
 }
 
-function deletionPipeline(snapshot, searchIndex) {
-  removeDocFromSearchIndex(snapshot.ref, searchIndex);
+function deletionPipeline(id, searchIndex) {
+  removeIdFromSearchIndex(id, searchIndex);
 }
 
-function removeDocFromSearchIndex(_x20, _x21) {
-  return _removeDocFromSearchIndex.apply(this, arguments);
-} // ---------------------------
+function removeIdFromSearchIndex(_x20, _x21) {
+  return _removeIdFromSearchIndex.apply(this, arguments);
+} // async function removeDocFromSearchIndex(docRef, searchIndex) {
+// 	let snapshot = await docRef.get()
+// 	try { AlgoliaSearch.removeDocFromIndex(snapshot.data(), searchIndex) }
+// 	catch (err) { throw new Error(err) }
+// }
+// ---------------------------
 // 	Utils : User
 // ---------------------------
 
 
-function _removeDocFromSearchIndex() {
-  _removeDocFromSearchIndex = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee11(docRef, searchIndex) {
-    var snapshot;
+function _removeIdFromSearchIndex() {
+  _removeIdFromSearchIndex = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee11(id, searchIndex) {
     return regeneratorRuntime.wrap(function _callee11$(_context11) {
       while (1) {
         switch (_context11.prev = _context11.next) {
           case 0:
-            _context11.next = 2;
-            return docRef.get();
+            _context11.prev = 0;
 
-          case 2:
-            snapshot = _context11.sent;
-            _context11.prev = 3;
+            _services.AlgoliaSearch.removeIdFromIndex(id, searchIndex);
 
-            _services.AlgoliaSearch.removeDocFromIndex(snapshot.data(), searchIndex);
-
-            _context11.next = 10;
+            _context11.next = 7;
             break;
 
-          case 7:
-            _context11.prev = 7;
-            _context11.t0 = _context11["catch"](3);
+          case 4:
+            _context11.prev = 4;
+            _context11.t0 = _context11["catch"](0);
             throw new Error(_context11.t0);
 
-          case 10:
+          case 7:
           case "end":
             return _context11.stop();
         }
       }
-    }, _callee11, null, [[3, 7]]);
+    }, _callee11, null, [[0, 4]]);
   }));
-  return _removeDocFromSearchIndex.apply(this, arguments);
+  return _removeIdFromSearchIndex.apply(this, arguments);
 }
 
 function buildUserDoc(userRecord) {
