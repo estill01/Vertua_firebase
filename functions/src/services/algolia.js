@@ -52,35 +52,6 @@ AlgoliaSearch.index.projects.setSettings({
 
 })
 
-// async function _buildDocFromFirebaseRecord(record, searchIndex) {
-// 	console.log("[_buildDocFromFirebaseRecord] START")
-// 	// console.log("doc: ", doc)
-// 	
-// 	// _fieldsProto<Map<Map>> = {
-// 	// 	key: { type: value },
-// 	// 	key: { type: value },
-// 	// }
-//
-// 	throw new Error("TEMPORARY -- Need to revamp '_buildDocFromFirebaseRecord'")
-//
-// 	// -- TEMPORAR --
-// 	// const doc = {}
-// 	// const settings = await AlgoliaSearch.index[searchIndex].getSettings()
-// 	// const attrsArr = union(settings.searchableAttributes, settings.attributesToRetrieve)
-//   //
-// 	// attrsArr.forEach((attr) => { 
-// 	// 	let arr = Object.values(record._fieldsProto[attr]) 
-// 	// 	if (arr.length > 0 && arr.length < 2) { doc[attr] = arr[0] }
-// 	// 	else { doc[attr] = arr }
-// 	// })
-//   //
-// 	// doc.objectID = record._fieldsProto.uid.stringValue
-//   //
-// 	// console.log("[_buildDocFromFirebaseRecord] END")
-//   //
-// 	// return doc
-// }
-
 // -------------------------------
 // 	Utils
 // -------------------------------
@@ -100,11 +71,9 @@ AlgoliaSearch.addDocToIndex = async (doc, index) => {
 	catch (err) { throw new Error(err) }
 }
 
-// TODO Not working.
 AlgoliaSearch.removeIdFromIndex = async (id, index) => {
 	console.log("[AlgoliaSearch.removeIDFromIndex]")
 	console.log("id: ", id)
-	// id should be objectID ; so if it's not working maybe that's why.
 	try {
 		let result = await AlgoliaSearch.index[index].deleteObject(id)
 		return result

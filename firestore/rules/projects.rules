@@ -3,15 +3,19 @@
 
 		match /projects/{projectId} {
 			allow read: if request.auth.uid != null;
-			allow write: if request.auth.uid != null; 
-			allow delete: if request.auth.uid == resource.data.creatorId;
+
+			allow create: if validCreatorId()
+			 							&& isSignedIn()
+			 							&& isProject(request.resource.data);
+
+			allow delete: if request.auth.uid == resource.data.creator.uid;
 		}
 
 		function isProject(doc) {
 			return doc.size() == 4
 			&& doc.name is string
 			&& doc.description is string
-			&& doc.creatorId is string
-			&& doc.createdAt is string
+			&& doc.uid is string
+			&& doc.creator is map;
 		}
 

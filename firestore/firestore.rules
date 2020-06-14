@@ -5,17 +5,23 @@ service cloud.firestore {
 		// -------------------------
 
 		match /projects/{projectId} {
-			allow read: if requst.auth.uid != null;
-			allow write: if request.auth.uid != null; 
-			allow delete: if request.auth.uid == resource.data.creatorId;
+			allow read: if request.auth.uid != null;
+
+			allow create: if validCreatorId()
+			 							&& isSignedIn()
+			 							&& isProject(request.resource.data);
+
+			allow delete: if request.auth.uid == resource.data.creator.uid;
 		}
 
 		function isProject(doc) {
 			return doc.size() == 4
+			// return doc.size() == 5
 			&& doc.name is string
 			&& doc.description is string
-			&& doc.creatorId is string
-			&& doc.createdAt is string
+			&& doc.uid is string
+			&& doc.creator is map;
+//			&& doc.createdAt is string;
 		}
 
 
@@ -38,16 +44,21 @@ service cloud.firestore {
 		//  UTILS 
 		// --------------------------
 
-
-		function requestor() { return request.auth }
-		function requestorEmail() { return requestor().token.email }
-		function requestorEmailIsVerified() { return requestor().token.email_verified }
+		function validCreatorId() { return request.auth.uid == request.resource.data.creator.uid; }
+		function isSignedIn() { return request.auth != null }
 
 		function incomingData() { return request.resource.data }
 		function existingData() { return resource.data }
 
+		function requestor() { return request.auth }
+
+
+
+		function requestorEmail() { return requestor().token.email }
+		function requestorEmailIsVerified() { return requestor().token.email_verified }
+
+
 		function isSelf(uid) { return requestor().uid == uid } 
-		function isSignedIn() { return requestor() != null }
 
 		function madeBySelf(uid) { return requestor().uid == existingData().creator.id }
 		function isPublic() { return existingData().isPrivate == false }

@@ -20,9 +20,11 @@
 				"deploy:staging": "npm run build:staging && firebase deploy",
 				"deploy:staging:functions": "npm run build:staging:functions && firebase deploy --only functions",
 				"deploy:staging:firestore": "npm run use:staging && npm run build:firestore && firebase deploy --only firestore",
+				"deploy:staging:rules": "npm run deploy:staging:firestore",
 				"deploy:production": "npm run build:production && firebase deploy",
 				"deploy:production:functions": "npm run build:production:functions && firebase deploy --only functions",
 				"deploy:production:firestore": "npm run use:production && npm run build:firestore && firebase deploy --only firestore",
+				"deploy:production:rules": "npm run deploy:production:firestore",
 				"emulators": "npm run use:staging && npm run vars:emulator && firebase emulators:start --only functions,firestore",
 				"shell": "npm run use:staging && cd functions && npm run build && npm run shell",
 				"vars:emulator": "firebase functions:config:get > .runtimeconfig.json"
