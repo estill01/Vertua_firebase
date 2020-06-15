@@ -16,12 +16,10 @@ service cloud.firestore {
 
 		function isProject(doc) {
 			return doc.size() == 4
-			// return doc.size() == 5
 			&& doc.name is string
 			&& doc.description is string
 			&& doc.uid is string
 			&& doc.creator is map;
-//			&& doc.createdAt is string;
 		}
 
 
@@ -51,9 +49,6 @@ service cloud.firestore {
 		function existingData() { return resource.data }
 
 		function requestor() { return request.auth }
-
-
-
 		function requestorEmail() { return requestor().token.email }
 		function requestorEmailIsVerified() { return requestor().token.email_verified }
 

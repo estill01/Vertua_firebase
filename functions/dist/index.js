@@ -17,6 +17,8 @@ var _services = require("./services");
 
 var _lodash = require("lodash");
 
+var _nanoid = require("nanoid");
+
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
@@ -242,9 +244,13 @@ function _intakePipeline() {
             return addCreatorToDoc(docRef);
 
           case 10:
+            _context7.next = 12;
+            return addUrlPathToDoc(docRef, searchIndex);
+
+          case 12:
             addDocToSearchIndex(docRef, searchIndex);
 
-          case 11:
+          case 13:
           case "end":
             return _context7.stop();
         }
@@ -353,7 +359,169 @@ function _addCreatorToDoc() {
   return _addCreatorToDoc.apply(this, arguments);
 }
 
-function addDocToSearchIndex(_x18, _x19) {
+function addUrlPathToDoc(_x18, _x19) {
+  return _addUrlPathToDoc.apply(this, arguments);
+}
+
+function _addUrlPathToDoc() {
+  _addUrlPathToDoc = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee10(docRef, searchIndex) {
+    var snapshot, data, path, pathTaken;
+    return regeneratorRuntime.wrap(function _callee10$(_context10) {
+      while (1) {
+        switch (_context10.prev = _context10.next) {
+          case 0:
+            _context10.next = 2;
+            return docRef.get();
+
+          case 2:
+            snapshot = _context10.sent;
+            data = snapshot.data();
+            path = null;
+
+            if (searchIndex === 'users') {
+              path = data.displayName;
+            } else {
+              path = data.name;
+            }
+
+            path.toLowerCase();
+            path = path.replace(' ', '_');
+            path = encodeURIComponent(path);
+            _context10.next = 11;
+            return _pathTaken(path, searchIndex);
+
+          case 11:
+            pathTaken = _context10.sent;
+
+            if (!pathTaken) {
+              _context10.next = 16;
+              break;
+            }
+
+            _context10.next = 15;
+            return _generateUniquePath(path, searchIndex);
+
+          case 15:
+            path = _context10.sent;
+
+          case 16:
+            docRef.set({
+              urlPath: path
+            }, {
+              merge: true
+            });
+
+          case 17:
+          case "end":
+            return _context10.stop();
+        }
+      }
+    }, _callee10);
+  }));
+  return _addUrlPathToDoc.apply(this, arguments);
+}
+
+function _pathTaken(_x20, _x21) {
+  return _pathTaken2.apply(this, arguments);
+}
+
+function _pathTaken2() {
+  _pathTaken2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee11(path, searchIndex) {
+    var pathTaken;
+    return regeneratorRuntime.wrap(function _callee11$(_context11) {
+      while (1) {
+        switch (_context11.prev = _context11.next) {
+          case 0:
+            _context11.next = 2;
+            return app.firestore().collection(searchIndex).where("urlPath", "==", path);
+
+          case 2:
+            pathTaken = _context11.sent;
+            _context11.next = 5;
+            return pathTaken.get();
+
+          case 5:
+            pathTaken = _context11.sent;
+
+            if (!(pathTaken.docs.length > 0)) {
+              _context11.next = 10;
+              break;
+            }
+
+            return _context11.abrupt("return", true);
+
+          case 10:
+            return _context11.abrupt("return", false);
+
+          case 11:
+          case "end":
+            return _context11.stop();
+        }
+      }
+    }, _callee11);
+  }));
+  return _pathTaken2.apply(this, arguments);
+}
+
+function _generateRandomInt(max) {
+  var val = Math.floor(Math.random() * Math.floor(max));
+
+  if (val === 0) {
+    return _generateRandomInt(max);
+  } else {
+    return val;
+  }
+}
+
+function _generatePathExtension() {
+  var len = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 6;
+
+  var pathExtLen = _generateRandomInt(len);
+
+  var pathExt = "-" + (0, _nanoid.nanoid)(pathExtLen);
+  return pathExt;
+}
+
+function _generateUniquePath(_x22, _x23) {
+  return _generateUniquePath2.apply(this, arguments);
+}
+
+function _generateUniquePath2() {
+  _generateUniquePath2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee12(path, searchIndex) {
+    var pathExt, tmpPath, pathTaken;
+    return regeneratorRuntime.wrap(function _callee12$(_context12) {
+      while (1) {
+        switch (_context12.prev = _context12.next) {
+          case 0:
+            pathExt = _generatePathExtension();
+            tmpPath = path + pathExt;
+            _context12.next = 4;
+            return _pathTaken(tmpPath, searchIndex);
+
+          case 4:
+            pathTaken = _context12.sent;
+
+            if (!pathTaken) {
+              _context12.next = 9;
+              break;
+            }
+
+            return _context12.abrupt("return", _generateUniquePath(path, searchIndex));
+
+          case 9:
+            return _context12.abrupt("return", tmpPath);
+
+          case 10:
+          case "end":
+            return _context12.stop();
+        }
+      }
+    }, _callee12);
+  }));
+  return _generateUniquePath2.apply(this, arguments);
+}
+
+function addDocToSearchIndex(_x24, _x25) {
   return _addDocToSearchIndex.apply(this, arguments);
 } // ---------------------------
 // 	Utils : Deletion Pipeline
@@ -361,37 +529,37 @@ function addDocToSearchIndex(_x18, _x19) {
 
 
 function _addDocToSearchIndex() {
-  _addDocToSearchIndex = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee10(docRef, searchIndex) {
+  _addDocToSearchIndex = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee13(docRef, searchIndex) {
     var snapshot;
-    return regeneratorRuntime.wrap(function _callee10$(_context10) {
+    return regeneratorRuntime.wrap(function _callee13$(_context13) {
       while (1) {
-        switch (_context10.prev = _context10.next) {
+        switch (_context13.prev = _context13.next) {
           case 0:
             console.log("[addDocToSearchIndex]");
-            _context10.next = 3;
+            _context13.next = 3;
             return docRef.get();
 
           case 3:
-            snapshot = _context10.sent;
+            snapshot = _context13.sent;
             console.log("doc: ", snapshot.data());
-            _context10.prev = 5;
+            _context13.prev = 5;
 
             _services.AlgoliaSearch.addDocToIndex(snapshot.data(), searchIndex);
 
-            _context10.next = 12;
+            _context13.next = 12;
             break;
 
           case 9:
-            _context10.prev = 9;
-            _context10.t0 = _context10["catch"](5);
-            throw new Error(_context10.t0);
+            _context13.prev = 9;
+            _context13.t0 = _context13["catch"](5);
+            throw new Error(_context13.t0);
 
           case 12:
           case "end":
-            return _context10.stop();
+            return _context13.stop();
         }
       }
-    }, _callee10, null, [[5, 9]]);
+    }, _callee13, null, [[5, 9]]);
   }));
   return _addDocToSearchIndex.apply(this, arguments);
 }
@@ -400,7 +568,7 @@ function deletionPipeline(id, searchIndex) {
   removeIdFromSearchIndex(id, searchIndex);
 }
 
-function removeIdFromSearchIndex(_x20, _x21) {
+function removeIdFromSearchIndex(_x26, _x27) {
   return _removeIdFromSearchIndex.apply(this, arguments);
 } // async function removeDocFromSearchIndex(docRef, searchIndex) {
 // 	let snapshot = await docRef.get()
@@ -413,29 +581,29 @@ function removeIdFromSearchIndex(_x20, _x21) {
 
 
 function _removeIdFromSearchIndex() {
-  _removeIdFromSearchIndex = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee11(id, searchIndex) {
-    return regeneratorRuntime.wrap(function _callee11$(_context11) {
+  _removeIdFromSearchIndex = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee14(id, searchIndex) {
+    return regeneratorRuntime.wrap(function _callee14$(_context14) {
       while (1) {
-        switch (_context11.prev = _context11.next) {
+        switch (_context14.prev = _context14.next) {
           case 0:
-            _context11.prev = 0;
+            _context14.prev = 0;
 
             _services.AlgoliaSearch.removeIdFromIndex(id, searchIndex);
 
-            _context11.next = 7;
+            _context14.next = 7;
             break;
 
           case 4:
-            _context11.prev = 4;
-            _context11.t0 = _context11["catch"](0);
-            throw new Error(_context11.t0);
+            _context14.prev = 4;
+            _context14.t0 = _context14["catch"](0);
+            throw new Error(_context14.t0);
 
           case 7:
           case "end":
-            return _context11.stop();
+            return _context14.stop();
         }
       }
-    }, _callee11, null, [[0, 4]]);
+    }, _callee14, null, [[0, 4]]);
   }));
   return _removeIdFromSearchIndex.apply(this, arguments);
 }
@@ -449,35 +617,35 @@ function buildUserDoc(userRecord) {
   };
 }
 
-function getUserRecord(_x22) {
+function getUserRecord(_x28) {
   return _getUserRecord.apply(this, arguments);
 }
 
 function _getUserRecord() {
-  _getUserRecord = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee12(id) {
+  _getUserRecord = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee15(id) {
     var docRef, snapshot;
-    return regeneratorRuntime.wrap(function _callee12$(_context12) {
+    return regeneratorRuntime.wrap(function _callee15$(_context15) {
       while (1) {
-        switch (_context12.prev = _context12.next) {
+        switch (_context15.prev = _context15.next) {
           case 0:
-            _context12.next = 2;
+            _context15.next = 2;
             return app.firestore().collection('users').doc(id);
 
           case 2:
-            docRef = _context12.sent;
-            _context12.next = 5;
+            docRef = _context15.sent;
+            _context15.next = 5;
             return docRef.get();
 
           case 5:
-            snapshot = _context12.sent;
-            return _context12.abrupt("return", snapshot.data());
+            snapshot = _context15.sent;
+            return _context15.abrupt("return", snapshot.data());
 
           case 7:
           case "end":
-            return _context12.stop();
+            return _context15.stop();
         }
       }
-    }, _callee12);
+    }, _callee15);
   }));
   return _getUserRecord.apply(this, arguments);
 }

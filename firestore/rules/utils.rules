@@ -8,9 +8,6 @@
 		function existingData() { return resource.data }
 
 		function requestor() { return request.auth }
-
-
-
 		function requestorEmail() { return requestor().token.email }
 		function requestorEmailIsVerified() { return requestor().token.email_verified }
 

@@ -3,6 +3,7 @@ import * as admin from 'firebase-admin'
 import * as functions from 'firebase-functions'
 import { AlgoliaSearch, SendGridMailer } from './services'
 import { isNil } from 'lodash'
+import { nanoid } from 'nanoid'
 
 const app = admin.initializeApp()
 
@@ -84,6 +85,7 @@ async function intakePipeline(snapshot, searchIndex) {
 	if (searchIndex !== 'users') { 
 		await addCreatorToDoc(docRef) 
 	}
+	await addUrlPathToDoc(docRef, searchIndex)
 	addDocToSearchIndex(docRef, searchIndex)
 }
 
@@ -120,6 +122,43 @@ async function addCreatorToDoc(docRef) {
 		}
 	)}
 	catch (err) { throw new Error(err) }
+}
+
+async function addUrlPathToDoc(docRef, searchIndex) {
+	let snapshot = await docRef.get()
+	let data = snapshot.data()
+	let path = null
+	if (searchIndex === 'users') { path = data.displayName } 
+	else { path = data.name }
+	path.toLowerCase()
+	path = path.replace(' ', '_')
+	path = encodeURIComponent(path)
+	let pathTaken = await _pathTaken(path, searchIndex)
+	if (pathTaken) { path = await _generateUniquePath(path, searchIndex) }
+	docRef.set({ urlPath: path }, { merge: true } )
+}
+async function _pathTaken(path, searchIndex) {
+	let pathTaken = await app.firestore().collection(searchIndex).where("urlPath", "==", path)
+	pathTaken = await pathTaken.get()
+	if (pathTaken.docs.length > 0) { return true }
+	else { return false }
+}
+function _generateRandomInt(max) {
+	let val = Math.floor(Math.random() * Math.floor(max))
+	if (val === 0) { return _generateRandomInt(max) }
+	else { return val }
+}
+function _generatePathExtension(len=6) {
+	let pathExtLen = _generateRandomInt(len) 
+	let pathExt = "-" + nanoid(pathExtLen)
+	return pathExt
+}
+async function _generateUniquePath(path, searchIndex) {
+	let pathExt = _generatePathExtension()
+	let tmpPath = path + pathExt
+	let pathTaken = await _pathTaken(tmpPath, searchIndex)
+	if (pathTaken) { return _generateUniquePath(path, searchIndex) }
+	else { return tmpPath }
 }
 
 async function addDocToSearchIndex(docRef, searchIndex) {

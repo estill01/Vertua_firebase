@@ -16,6 +16,8 @@
 			&& doc.name is string
 			&& doc.description is string
 			&& doc.uid is string
-			&& doc.creator is map;
+			&& doc.creator is map
+			&& doc.creator.size() == 1
+			&& doc.creator.uid is string;
 		}
 
