@@ -176,12 +176,9 @@ async function addSlug(data, searchIndex) {
 }
 
 async function _slugTaken(slug, searchIndex) {
-	console.log("[_slugTaken]")
 	const fullSlug = '/' + searchIndex + '/' + slug
-	console.log("searching for: ", fullSlug)
 	let slugTaken = app.firestore().collection(searchIndex).where("urlSlug", "==", fullSlug)
 	slugTaken = await slugTaken.get()
-	console.log("slugTaken: ", slugTaken)
 	if (slugTaken.docs.length > 0) { return true }
 	else { return false }
 }
