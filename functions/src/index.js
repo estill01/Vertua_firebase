@@ -97,7 +97,7 @@ async function intakePipeline(snapshot, searchIndex) {
 			await addDocToSearchIndex(data, searchIndex) 
 		}
 		catch (err) { 
-			try { await app.firestore().collection(searchIndex).doc(data.uid).delete() } // Clean up created item
+			try { await app.firestore().collection(searchIndex).doc(data.uid).delete() } // Clean up created item (NB. This isn't working)
 			catch (err) { throw new Error(err) }
 			throw new Error(err) 
 		}
@@ -111,16 +111,26 @@ async function addTimestamp(data) { data.createdAt = Date.now() }
 // 	catch (err) { throw new Error(err) }
 // }
 
-
 async function addCreator(data) {
+	// TODO annonymous users 'urlSlug' is blank
+	
 	let creator = null
 	try { creator = await getUserRecord(data.creator.uid) } 
 	catch (err) { throw new Error(err) }
-	// TODO data.creator.uid should already be set
+
+	// Is this 'undefined' for anonymous users?
+
+	console.log("[addCreator]")
+	console.log("data.creator: ", data.creator)
+	console.log("data.creator.displayName: ", data.creator.displayName)
+
 	data.creator.displayName = creator.displayName || ''
 	data.creator.photoURL = creator.photoURL || ''
-	data.creator.docRef = app.firestore().collection('users').doc(data.creator.uid)
+	// data.creator.docRef = app.firestore().collection('users').doc(data.creator.uid)
 	data.creator.urlSlug = creator.urlSlug || ''
+
+	console.log("data.creator")
+
 }
 
 
@@ -174,16 +184,19 @@ async function addCreator(data) {
 
 async function addSlug(data, searchIndex) {
 	let slug = null
-	if (searchIndex === 'users') { slug = data.displayName } 
+	if (searchIndex === 'users') { 
+		if (data.displayName === '') { slug = data.uid } // NB. Anonymous users
+		else { slug = data.displayName }
+	} 
 	else { slug = data.name }
 	if (slug === '') { slug = data.uid }
 
-	slug = slug.toLowerCase()
-	slug = slug.replace(' ', '_')
+	// slug = slug.toLowerCase()
+	slug = slug.replace(/ /gi, '_')
 	slug = encodeURIComponent(slug)
 	let slugTaken = await _slugTaken(slug, searchIndex)
 	if (slugTaken) { slug = await _generateUniqueSlug(slug, searchIndex) }
-	data.urlSlug = searchIndex + '/' + slug
+	data.urlSlug = '/' + searchIndex + '/' + slug
 }
 // async function addUrlPathToDoc(docRef, searchIndex) {
 // 	let snapshot = await docRef.get()
@@ -289,5 +302,7 @@ function buildUserDoc(userRecord) {
 async function getUserRecord(id) {
 	let docRef = app.firestore().collection('users').doc(id)
 	let snapshot = await docRef.get()
+	console.log("[getUserRecord]")
+	console.log("user: ", snapshot.data())
 	return snapshot.data()
 }

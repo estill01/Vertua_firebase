@@ -391,6 +391,7 @@ function _addCreator() {
       while (1) {
         switch (_context10.prev = _context10.next) {
           case 0:
+            // TODO annonymous users 'urlSlug' is blank
             creator = null;
             _context10.prev = 1;
             _context10.next = 4;
@@ -407,13 +408,17 @@ function _addCreator() {
             throw new Error(_context10.t0);
 
           case 10:
-            // TODO data.creator.uid should already be set
+            // Is this 'undefined' for anonymous users?
+            console.log("[addCreator]");
+            console.log("data.creator: ", data.creator);
+            console.log("data.creator.displayName: ", data.creator.displayName);
             data.creator.displayName = creator.displayName || '';
-            data.creator.photoURL = creator.photoURL || '';
-            data.creator.docRef = app.firestore().collection('users').doc(data.creator.uid);
-            data.creator.urlSlug = creator.urlSlug || '';
+            data.creator.photoURL = creator.photoURL || ''; // data.creator.docRef = app.firestore().collection('users').doc(data.creator.uid)
 
-          case 14:
+            data.creator.urlSlug = creator.urlSlug || '';
+            console.log("data.creator");
+
+          case 17:
           case "end":
             return _context10.stop();
         }
@@ -450,39 +455,44 @@ function _addSlug() {
             slug = null;
 
             if (searchIndex === 'users') {
-              slug = data.displayName;
+              if (data.displayName === '') {
+                slug = data.uid;
+              } // NB. Anonymous users
+              else {
+                  slug = data.displayName;
+                }
             } else {
               slug = data.name;
             }
 
             if (slug === '') {
               slug = data.uid;
-            }
+            } // slug = slug.toLowerCase()
 
-            slug = slug.toLowerCase();
-            slug = slug.replace(' ', '_');
+
+            slug = slug.replace(/ /gi, '_');
             slug = encodeURIComponent(slug);
-            _context11.next = 8;
+            _context11.next = 7;
             return _slugTaken(slug, searchIndex);
 
-          case 8:
+          case 7:
             slugTaken = _context11.sent;
 
             if (!slugTaken) {
-              _context11.next = 13;
+              _context11.next = 12;
               break;
             }
 
-            _context11.next = 12;
+            _context11.next = 11;
             return _generateUniqueSlug(slug, searchIndex);
 
-          case 12:
+          case 11:
             slug = _context11.sent;
 
-          case 13:
-            data.urlSlug = searchIndex + '/' + slug;
+          case 12:
+            data.urlSlug = '/' + searchIndex + '/' + slug;
 
-          case 14:
+          case 13:
           case "end":
             return _context11.stop();
         }
@@ -720,9 +730,11 @@ function _getUserRecord() {
 
           case 3:
             snapshot = _context16.sent;
+            console.log("[getUserRecord]");
+            console.log("user: ", snapshot.data());
             return _context16.abrupt("return", snapshot.data());
 
-          case 5:
+          case 7:
           case "end":
             return _context16.stop();
         }
