@@ -131,10 +131,9 @@ var onUserDelete = functions.firestore.document('users/{userId}').onDelete( /*#_
         switch (_context4.prev = _context4.next) {
           case 0:
             console.log("[onUserDelete]");
-            console.log("context.params.userId: ", context.params.userId);
             deletionPipeline(context.params.userId, 'users');
 
-          case 3:
+          case 2:
           case "end":
             return _context4.stop();
         }
@@ -198,7 +197,34 @@ var onProjectDelete = functions.firestore.document('projects/{projectId}').onDel
 // ---------------------------
 // 	Utils : Intake Pipeline
 // ---------------------------
-// TODO Check(?): doc.uid != item.uid ? item.uid = doc.uid
+// async function intakePipeline(snapshot, searchIndex) {
+// 	if (isNil(snapshot)) { throw new Error('`intakePipeline()` parameter `snapshot` cannot be null') }
+// 	if (isNil(searchIndex)) { throw new Error('`intakePipeline()` parameter `searchIndex` cannot be null') }
+// 	let docRef = snapshot.ref 
+// 	let data = snapshot.data()
+// 	let promises = []
+//
+// 	addTimestamp(data)
+//
+// 	if (searchIndex !== 'users') { promises.push(addCreator(data)) }
+// 	promises.push(addSlug(data, searchIndex))
+//
+// 	return Promise.all(promises).then(async (val) => {
+// 		try { 
+// 			await docRef.set(data) 
+// 			if (!isNil(data.creator)) {
+// 				if(!isNil(data.creator.docRef)) { delete data.creator.docRef }  // NB. was causing a circular reference error with algolia
+// 			}
+// 			await addDocToSearchIndex(data, searchIndex) 
+// 		}
+// 		catch (err) { 
+// 			try { await app.firestore().collection(searchIndex).doc(data.uid).delete() } // Clean up created item (NB. This isn't working)
+// 			catch (err) { throw new Error(err) }
+// 			throw new Error(err) 
+// 		}
+// 		return
+// 	})
+// }
 
 exports.onProjectDelete = onProjectDelete;
 
@@ -207,14 +233,14 @@ function intakePipeline(_x13, _x14) {
 }
 
 function _intakePipeline() {
-  _intakePipeline = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee8(snapshot, searchIndex) {
-    var docRef, data, promises;
-    return regeneratorRuntime.wrap(function _callee8$(_context8) {
+  _intakePipeline = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee7(snapshot, searchIndex) {
+    var docRef, data;
+    return regeneratorRuntime.wrap(function _callee7$(_context7) {
       while (1) {
-        switch (_context8.prev = _context8.next) {
+        switch (_context7.prev = _context7.next) {
           case 0:
             if (!(0, _lodash.isNil)(snapshot)) {
-              _context8.next = 2;
+              _context7.next = 2;
               break;
             }
 
@@ -222,7 +248,7 @@ function _intakePipeline() {
 
           case 2:
             if (!(0, _lodash.isNil)(searchIndex)) {
-              _context8.next = 4;
+              _context7.next = 4;
               break;
             }
 
@@ -231,233 +257,154 @@ function _intakePipeline() {
           case 4:
             docRef = snapshot.ref;
             data = snapshot.data();
-            promises = [];
-            addTimestamp(data);
+            _context7.prev = 6;
+            _context7.next = 9;
+            return Promise.all([addTimestamp(data), addCreator(data, searchIndex), addSlug(data, searchIndex)]);
 
-            if (searchIndex !== 'users') {
-              promises.push(addCreator(data));
-            }
+          case 9:
+            _cleanData(data);
 
-            promises.push(addSlug(data, searchIndex));
-            return _context8.abrupt("return", Promise.all(promises).then( /*#__PURE__*/function () {
-              var _ref7 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee7(val) {
-                return regeneratorRuntime.wrap(function _callee7$(_context7) {
-                  while (1) {
-                    switch (_context7.prev = _context7.next) {
-                      case 0:
-                        _context7.prev = 0;
-                        _context7.next = 3;
-                        return docRef.set(data);
+            _context7.next = 12;
+            return Promise.all([docRef.set(data), addDocToSearchIndex(data, searchIndex)]);
 
-                      case 3:
-                        if (!(0, _lodash.isNil)(data.creator)) {
-                          if (!(0, _lodash.isNil)(data.creator.docRef)) {
-                            delete data.creator.docRef;
-                          } // NB. was causing a circular reference error with algolia
+          case 12:
+            _context7.next = 25;
+            break;
 
-                        }
+          case 14:
+            _context7.prev = 14;
+            _context7.t0 = _context7["catch"](6);
+            _context7.prev = 16;
+            _context7.next = 19;
+            return app.firestore().collection(searchIndex).doc(data.uid)["delete"]();
 
-                        _context7.next = 6;
-                        return addDocToSearchIndex(data, searchIndex);
+          case 19:
+            _context7.next = 24;
+            break;
 
-                      case 6:
-                        _context7.next = 19;
-                        break;
+          case 21:
+            _context7.prev = 21;
+            _context7.t1 = _context7["catch"](16);
+            throw new Error(_context7.t1);
 
-                      case 8:
-                        _context7.prev = 8;
-                        _context7.t0 = _context7["catch"](0);
-                        _context7.prev = 10;
-                        _context7.next = 13;
-                        return app.firestore().collection(searchIndex).doc(data.uid)["delete"]();
+          case 24:
+            throw new Error(_context7.t0);
 
-                      case 13:
-                        _context7.next = 18;
-                        break;
+          case 25:
+            return _context7.abrupt("return");
 
-                      case 15:
-                        _context7.prev = 15;
-                        _context7.t1 = _context7["catch"](10);
-                        throw new Error(_context7.t1);
+          case 26:
+          case "end":
+            return _context7.stop();
+        }
+      }
+    }, _callee7, null, [[6, 14], [16, 21]]);
+  }));
+  return _intakePipeline.apply(this, arguments);
+}
 
-                      case 18:
-                        throw new Error(_context7.t0);
+function _cleanData(data) {
+  // NB. 'creator.docRef' was causing a circular reference error with Algolia indexing
+  if (!(0, _lodash.isNil)(data.creator)) {
+    if (!(0, _lodash.isNil)(data.creator.docRef)) {
+      delete data.creator.docRef;
+    }
+  }
+}
 
-                      case 19:
-                        return _context7.abrupt("return");
+function addTimestamp(_x15) {
+  return _addTimestamp.apply(this, arguments);
+} // TODO Review for anonymous user case -- e.g. annonymous users 'urlSlug' is blank (?)
 
-                      case 20:
-                      case "end":
-                        return _context7.stop();
-                    }
-                  }
-                }, _callee7, null, [[0, 8], [10, 15]]);
-              }));
 
-              return function (_x28) {
-                return _ref7.apply(this, arguments);
-              };
-            }()));
+function _addTimestamp() {
+  _addTimestamp = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee8(data) {
+    return regeneratorRuntime.wrap(function _callee8$(_context8) {
+      while (1) {
+        switch (_context8.prev = _context8.next) {
+          case 0:
+            data.createdAt = Date.now();
 
-          case 11:
+          case 1:
           case "end":
             return _context8.stop();
         }
       }
     }, _callee8);
   }));
-  return _intakePipeline.apply(this, arguments);
+  return _addTimestamp.apply(this, arguments);
 }
 
-function addTimestamp(_x15) {
-  return _addTimestamp.apply(this, arguments);
-} // async function addTimestampToDoc(docRef, collection) {
-// 	try { return docRef.set({ createdAt: Date.now() }, { merge: true }) }
-// 	catch (err) { throw new Error(err) }
-// }
+function addCreator(_x16, _x17) {
+  return _addCreator.apply(this, arguments);
+}
 
-
-function _addTimestamp() {
-  _addTimestamp = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee9(data) {
+function _addCreator() {
+  _addCreator = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee9(data, searchIndex) {
+    var creator;
     return regeneratorRuntime.wrap(function _callee9$(_context9) {
       while (1) {
         switch (_context9.prev = _context9.next) {
           case 0:
-            data.createdAt = Date.now();
+            console.log("[addCreator]");
 
-          case 1:
+            if (!(searchIndex === 'users')) {
+              _context9.next = 3;
+              break;
+            }
+
+            return _context9.abrupt("return");
+
+          case 3:
+            creator = null;
+            _context9.prev = 4;
+            _context9.next = 7;
+            return getUserRecord(data.creator.uid);
+
+          case 7:
+            creator = _context9.sent;
+            _context9.next = 13;
+            break;
+
+          case 10:
+            _context9.prev = 10;
+            _context9.t0 = _context9["catch"](4);
+            throw new Error(_context9.t0);
+
+          case 13:
+            // console.log("data.creator: ", data.creator)
+            // console.log("data.creator.displayName: ", data.creator.displayName)
+            data.creator.displayName = creator.displayName || '';
+            data.creator.photoURL = creator.photoURL || '';
+            data.creator.urlSlug = creator.urlSlug || '';
+
+          case 16:
           case "end":
             return _context9.stop();
         }
       }
-    }, _callee9);
+    }, _callee9, null, [[4, 10]]);
   }));
-  return _addTimestamp.apply(this, arguments);
+  return _addCreator.apply(this, arguments);
 }
 
-function addCreator(_x16) {
-  return _addCreator.apply(this, arguments);
-} // return new Promise((resolve, reject) => {
-// 	try {
-// 		let creator = await getUserRecord(data.creator.uid)
-// 		// TODO data.creator.uid should already be set
-// 		data.creator.displayName = creator.displayName
-// 		data.creator.photoURL = creator.photoURL
-// 		data.creator.docRef = app.firestore().collection('users').doc(data.creator.uid)
-// 		resolve(data)
-// 	}
-// 	catch (err) {
-// 		reject(err)
-// 	}
-// 	// TODO is this the right place for this?
-// 	return
-// })
-// async function addCreatorToDoc(docRef, data) {
-// 	console.log('[addCreatorToSnapshot]')
-// 	let snapshot = await docRef.get()
-// 	let data = snapshot.data()
-// 	let creator = null
-//
-// 	try { creator = await getUserRecord(data.creator.uid) } 
-// 	catch (err) { throw new Error(err) }
-//
-// 	console.log('creator: ', creator)
-//
-// 	// TODO need to set values for anonymous users
-// 	try { await docRef.set(
-// 		{
-// 			creator: {
-// 				displayName: creator.displayName || '',
-// 				photoURL: creator.photoURL || '',
-// 				docRef: app.firestore().collection('usrs').doc(data.creator.uid),
-// 			}
-// 		},
-// 		{ 
-// 			mergeFields: [
-// 				'creator.displayName',
-// 				'creator.photoURL',
-// 				'creator.docRef',
-// 			]
-// 		}
-// 	)}
-// 	catch (err) { throw new Error(err) }
-// }
+function addSlug(_x18, _x19) {
+  return _addSlug.apply(this, arguments);
+}
 
-
-function _addCreator() {
-  _addCreator = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee10(data) {
-    var creator;
+function _addSlug() {
+  _addSlug = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee10(data, searchIndex) {
+    var slug, slugTaken;
     return regeneratorRuntime.wrap(function _callee10$(_context10) {
       while (1) {
         switch (_context10.prev = _context10.next) {
-          case 0:
-            // TODO annonymous users 'urlSlug' is blank
-            creator = null;
-            _context10.prev = 1;
-            _context10.next = 4;
-            return getUserRecord(data.creator.uid);
-
-          case 4:
-            creator = _context10.sent;
-            _context10.next = 10;
-            break;
-
-          case 7:
-            _context10.prev = 7;
-            _context10.t0 = _context10["catch"](1);
-            throw new Error(_context10.t0);
-
-          case 10:
-            // Is this 'undefined' for anonymous users?
-            console.log("[addCreator]");
-            console.log("data.creator: ", data.creator);
-            console.log("data.creator.displayName: ", data.creator.displayName);
-            data.creator.displayName = creator.displayName || '';
-            data.creator.photoURL = creator.photoURL || ''; // data.creator.docRef = app.firestore().collection('users').doc(data.creator.uid)
-
-            data.creator.urlSlug = creator.urlSlug || '';
-            console.log("data.creator");
-
-          case 17:
-          case "end":
-            return _context10.stop();
-        }
-      }
-    }, _callee10, null, [[1, 7]]);
-  }));
-  return _addCreator.apply(this, arguments);
-}
-
-function addSlug(_x17, _x18) {
-  return _addSlug.apply(this, arguments);
-} // async function addUrlPathToDoc(docRef, searchIndex) {
-// 	let snapshot = await docRef.get()
-// 	let data = snapshot.data()
-// 	let path = null
-// 	if (searchIndex === 'users') { path = data.displayName } 
-// 	else { path = data.name }
-// 	path.toLowerCase()
-// 	path = path.replace(' ', '_')
-// 	path = encodeURIComponent(path)
-// 	let pathTaken = await _pathTaken(path, searchIndex)
-// 	if (pathTaken) { path = await _generateUniquePath(path, searchIndex) }
-// 	docRef.set({ urlPath: path }, { merge: true } )
-// }
-
-
-function _addSlug() {
-  _addSlug = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee11(data, searchIndex) {
-    var slug, slugTaken;
-    return regeneratorRuntime.wrap(function _callee11$(_context11) {
-      while (1) {
-        switch (_context11.prev = _context11.next) {
           case 0:
             slug = null;
 
             if (searchIndex === 'users') {
               if (data.displayName === '') {
                 slug = data.uid;
-              } // NB. Anonymous users
+              } // NB. To handle anonymous users which don't have a 'displayName' property.
               else {
                   slug = data.displayName;
                 }
@@ -472,25 +419,67 @@ function _addSlug() {
 
             slug = slug.replace(/ /gi, '_');
             slug = encodeURIComponent(slug);
-            _context11.next = 7;
+            _context10.next = 7;
             return _slugTaken(slug, searchIndex);
 
           case 7:
-            slugTaken = _context11.sent;
+            slugTaken = _context10.sent;
 
             if (!slugTaken) {
+              _context10.next = 12;
+              break;
+            }
+
+            _context10.next = 11;
+            return _generateUniqueSlug(slug, searchIndex);
+
+          case 11:
+            slug = _context10.sent;
+
+          case 12:
+            data.urlSlug = '/' + searchIndex + '/' + slug;
+
+          case 13:
+          case "end":
+            return _context10.stop();
+        }
+      }
+    }, _callee10);
+  }));
+  return _addSlug.apply(this, arguments);
+}
+
+function _slugTaken(_x20, _x21) {
+  return _slugTaken2.apply(this, arguments);
+}
+
+function _slugTaken2() {
+  _slugTaken2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee11(slug, searchIndex) {
+    var fullSlug, slugTaken;
+    return regeneratorRuntime.wrap(function _callee11$(_context11) {
+      while (1) {
+        switch (_context11.prev = _context11.next) {
+          case 0:
+            console.log("[_slugTaken]");
+            fullSlug = '/' + searchIndex + '/' + slug;
+            console.log("searching for: ", fullSlug);
+            slugTaken = app.firestore().collection(searchIndex).where("urlSlug", "==", fullSlug);
+            _context11.next = 6;
+            return slugTaken.get();
+
+          case 6:
+            slugTaken = _context11.sent;
+            console.log("slugTaken: ", slugTaken);
+
+            if (!(slugTaken.docs.length > 0)) {
               _context11.next = 12;
               break;
             }
 
-            _context11.next = 11;
-            return _generateUniqueSlug(slug, searchIndex);
-
-          case 11:
-            slug = _context11.sent;
+            return _context11.abrupt("return", true);
 
           case 12:
-            data.urlSlug = '/' + searchIndex + '/' + slug;
+            return _context11.abrupt("return", false);
 
           case 13:
           case "end":
@@ -499,62 +488,11 @@ function _addSlug() {
       }
     }, _callee11);
   }));
-  return _addSlug.apply(this, arguments);
-}
-
-function _slugTaken(_x19, _x20) {
-  return _slugTaken2.apply(this, arguments);
-} // async function _pathTaken(path, searchIndex) {
-// 	let pathTaken = await app.firestore().collection(searchIndex).where("urlPath", "==", path)
-// 	pathTaken = await pathTaken.get()
-// 	if (pathTaken.docs.length > 0) { return true }
-// 	else { return false }
-// }
-
-
-function _slugTaken2() {
-  _slugTaken2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee12(slug, searchIndex) {
-    var fullSlug, slugTaken;
-    return regeneratorRuntime.wrap(function _callee12$(_context12) {
-      while (1) {
-        switch (_context12.prev = _context12.next) {
-          case 0:
-            fullSlug = searchIndex + '/' + slug;
-            slugTaken = app.firestore().collection(searchIndex).where("urlSlug", "==", fullSlug);
-            _context12.next = 4;
-            return slugTaken.get();
-
-          case 4:
-            slugTaken = _context12.sent;
-
-            if (!(slugTaken.docs.length > 0)) {
-              _context12.next = 9;
-              break;
-            }
-
-            return _context12.abrupt("return", true);
-
-          case 9:
-            return _context12.abrupt("return", false);
-
-          case 10:
-          case "end":
-            return _context12.stop();
-        }
-      }
-    }, _callee12);
-  }));
   return _slugTaken2.apply(this, arguments);
 }
 
 function _generateRandomInt(max) {
-  var val = Math.floor(Math.random() * Math.floor(max));
-
-  if (val === 0) {
-    return _generateRandomInt(max);
-  } else {
-    return val;
-  }
+  return Math.floor(Math.random() * Math.floor(max)) + 1;
 }
 
 function _generateSlugExtension() {
@@ -564,98 +502,79 @@ function _generateSlugExtension() {
 
   var slugExt = "-" + (0, _nanoid.nanoid)(slugExtLen);
   return slugExt;
-} // function _generatePathExtension(len=6) {
-// 	let pathExtLen = _generateRandomInt(len) 
-// 	let pathExt = "-" + nanoid(pathExtLen)
-// 	return pathExt
-// }
+}
 
-
-function _generateUniqueSlug(_x21, _x22) {
+function _generateUniqueSlug(_x22, _x23) {
   return _generateUniqueSlug2.apply(this, arguments);
-} // async function _generateUniquePath(path, searchIndex) {
-// 	let pathExt = _generatePathExtension()
-// 	let tmpPath = path + pathExt
-// 	let pathTaken = await _pathTaken(tmpPath, searchIndex)
-// 	if (pathTaken) { return _generateUniquePath(path, searchIndex) }
-// 	else { return tmpPath }
-// }
-
+}
 
 function _generateUniqueSlug2() {
-  _generateUniqueSlug2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee13(slug, searchIndex) {
+  _generateUniqueSlug2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee12(slug, searchIndex) {
     var slugExt, newSlug, slugTaken;
-    return regeneratorRuntime.wrap(function _callee13$(_context13) {
+    return regeneratorRuntime.wrap(function _callee12$(_context12) {
       while (1) {
-        switch (_context13.prev = _context13.next) {
+        switch (_context12.prev = _context12.next) {
           case 0:
             slugExt = _generateSlugExtension();
             newSlug = slug + slugExt;
-            _context13.next = 4;
+            _context12.next = 4;
             return _slugTaken(newSlug, searchIndex);
 
           case 4:
-            slugTaken = _context13.sent;
+            slugTaken = _context12.sent;
 
             if (!slugTaken) {
-              _context13.next = 9;
+              _context12.next = 9;
               break;
             }
 
-            return _context13.abrupt("return", _generateUniqueSlug(slug, searchIndex));
+            return _context12.abrupt("return", _generateUniqueSlug(slug, searchIndex));
 
           case 9:
-            return _context13.abrupt("return", newSlug);
+            return _context12.abrupt("return", newSlug);
 
           case 10:
           case "end":
-            return _context13.stop();
+            return _context12.stop();
         }
       }
-    }, _callee13);
+    }, _callee12);
   }));
   return _generateUniqueSlug2.apply(this, arguments);
 }
 
-function addDocToSearchIndex(_x23, _x24) {
+function addDocToSearchIndex(_x24, _x25) {
   return _addDocToSearchIndex.apply(this, arguments);
-} // async function addDocToSearchIndex(docRef, searchIndex) {
-// 	console.log("[addDocToSearchIndex]")
-// 	let snapshot = await docRef.get()
-// 	console.log("doc: ", snapshot.data())
-// 	try { AlgoliaSearch.addDocToIndex(snapshot.data(), searchIndex) }
-// 	catch (err) { throw new Error(err) }
-// }
-// ---------------------------
+} // ---------------------------
 // 	Utils : Deletion Pipeline
 // ---------------------------
 
 
 function _addDocToSearchIndex() {
-  _addDocToSearchIndex = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee14(data, searchIndex) {
-    return regeneratorRuntime.wrap(function _callee14$(_context14) {
+  _addDocToSearchIndex = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee13(data, searchIndex) {
+    return regeneratorRuntime.wrap(function _callee13$(_context13) {
       while (1) {
-        switch (_context14.prev = _context14.next) {
+        switch (_context13.prev = _context13.next) {
           case 0:
             console.log("[addDocToSearchIndex]");
-            _context14.prev = 1;
+            _context13.prev = 1;
 
             _services.AlgoliaSearch.addDocToIndex(data, searchIndex);
 
-            _context14.next = 8;
+            _context13.next = 8;
             break;
 
           case 5:
-            _context14.prev = 5;
-            _context14.t0 = _context14["catch"](1);
-            throw new Error(_context14.t0);
+            _context13.prev = 5;
+            _context13.t0 = _context13["catch"](1);
+            throw new Error(_context13.t0);
 
           case 8:
           case "end":
-            return _context14.stop();
+            return _context13.stop();
         }
       }
-    }, _callee14, null, [[1, 5]]);
+    }, _callee13, null, [[1, 5]]);
   }));
   return _addDocToSearchIndex.apply(this, arguments);
 }
@@ -664,7 +583,7 @@ function deletionPipeline(id, searchIndex) {
   removeIdFromSearchIndex(id, searchIndex);
 }
 
-function removeIdFromSearchIndex(_x25, _x26) {
+function removeIdFromSearchIndex(_x26, _x27) {
   return _removeIdFromSearchIndex.apply(this, arguments);
 } // async function removeDocFromSearchIndex(docRef, searchIndex) {
 // 	let snapshot = await docRef.get()
@@ -677,29 +596,29 @@ function removeIdFromSearchIndex(_x25, _x26) {
 
 
 function _removeIdFromSearchIndex() {
-  _removeIdFromSearchIndex = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee15(id, searchIndex) {
-    return regeneratorRuntime.wrap(function _callee15$(_context15) {
+  _removeIdFromSearchIndex = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee14(id, searchIndex) {
+    return regeneratorRuntime.wrap(function _callee14$(_context14) {
       while (1) {
-        switch (_context15.prev = _context15.next) {
+        switch (_context14.prev = _context14.next) {
           case 0:
-            _context15.prev = 0;
+            _context14.prev = 0;
 
             _services.AlgoliaSearch.removeIdFromIndex(id, searchIndex);
 
-            _context15.next = 7;
+            _context14.next = 7;
             break;
 
           case 4:
-            _context15.prev = 4;
-            _context15.t0 = _context15["catch"](0);
-            throw new Error(_context15.t0);
+            _context14.prev = 4;
+            _context14.t0 = _context14["catch"](0);
+            throw new Error(_context14.t0);
 
           case 7:
           case "end":
-            return _context15.stop();
+            return _context14.stop();
         }
       }
-    }, _callee15, null, [[0, 4]]);
+    }, _callee14, null, [[0, 4]]);
   }));
   return _removeIdFromSearchIndex.apply(this, arguments);
 }
@@ -713,33 +632,33 @@ function buildUserDoc(userRecord) {
   };
 }
 
-function getUserRecord(_x27) {
+function getUserRecord(_x28) {
   return _getUserRecord.apply(this, arguments);
 }
 
 function _getUserRecord() {
-  _getUserRecord = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee16(id) {
+  _getUserRecord = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee15(id) {
     var docRef, snapshot;
-    return regeneratorRuntime.wrap(function _callee16$(_context16) {
+    return regeneratorRuntime.wrap(function _callee15$(_context15) {
       while (1) {
-        switch (_context16.prev = _context16.next) {
+        switch (_context15.prev = _context15.next) {
           case 0:
             docRef = app.firestore().collection('users').doc(id);
-            _context16.next = 3;
+            _context15.next = 3;
             return docRef.get();
 
           case 3:
-            snapshot = _context16.sent;
+            snapshot = _context15.sent;
             console.log("[getUserRecord]");
             console.log("user: ", snapshot.data());
-            return _context16.abrupt("return", snapshot.data());
+            return _context15.abrupt("return", snapshot.data());
 
           case 7:
           case "end":
-            return _context16.stop();
+            return _context15.stop();
         }
       }
-    }, _callee16);
+    }, _callee15);
   }));
   return _getUserRecord.apply(this, arguments);
 }

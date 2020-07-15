@@ -44,7 +44,6 @@ export const onUserDelete = functions.firestore.
 	document('users/{userId}')
 	.onDelete(async (snapshot, context) => {
 		console.log("[onUserDelete]")
-		console.log("context.params.userId: ", context.params.userId)
 		deletionPipeline(context.params.userId, 'users') 
 	}) 
 
@@ -75,117 +74,94 @@ export const onProjectDelete = functions.firestore.
 // 	Utils : Intake Pipeline
 // ---------------------------
 	
-// TODO Check(?): doc.uid != item.uid ? item.uid = doc.uid
+// async function intakePipeline(snapshot, searchIndex) {
+// 	if (isNil(snapshot)) { throw new Error('`intakePipeline()` parameter `snapshot` cannot be null') }
+// 	if (isNil(searchIndex)) { throw new Error('`intakePipeline()` parameter `searchIndex` cannot be null') }
+// 	let docRef = snapshot.ref 
+// 	let data = snapshot.data()
+// 	let promises = []
+//
+// 	addTimestamp(data)
+//
+// 	if (searchIndex !== 'users') { promises.push(addCreator(data)) }
+// 	promises.push(addSlug(data, searchIndex))
+//
+// 	return Promise.all(promises).then(async (val) => {
+// 		try { 
+// 			await docRef.set(data) 
+// 			if (!isNil(data.creator)) {
+// 				if(!isNil(data.creator.docRef)) { delete data.creator.docRef }  // NB. was causing a circular reference error with algolia
+// 			}
+// 			await addDocToSearchIndex(data, searchIndex) 
+// 		}
+// 		catch (err) { 
+// 			try { await app.firestore().collection(searchIndex).doc(data.uid).delete() } // Clean up created item (NB. This isn't working)
+// 			catch (err) { throw new Error(err) }
+// 			throw new Error(err) 
+// 		}
+// 		return
+// 	})
+// }
+
 async function intakePipeline(snapshot, searchIndex) {
 	if (isNil(snapshot)) { throw new Error('`intakePipeline()` parameter `snapshot` cannot be null') }
 	if (isNil(searchIndex)) { throw new Error('`intakePipeline()` parameter `searchIndex` cannot be null') }
 	let docRef = snapshot.ref 
 	let data = snapshot.data()
-	let promises = []
 
-	addTimestamp(data)
+	try {
+		await Promise.all([
+			addTimestamp(data),
+			addCreator(data, searchIndex),
+			addSlug(data, searchIndex),
+		])
+		_cleanData(data)
+	
+		await Promise.all([
+			docRef.set(data), 
+			addDocToSearchIndex(data, searchIndex),
+		])
+	} 
+	catch (err) { 
+		// NB. Document 'delete()' triggers deletion pipeline which handles removing item from Algolia index
+		try { await app.firestore().collection(searchIndex).doc(data.uid).delete() } 
+		catch (err) { throw new Error(err) }
 
-	if (searchIndex !== 'users') { promises.push(addCreator(data)) }
-	promises.push(addSlug(data, searchIndex))
+		throw new Error(err) 
+	} 
+	return
+}
 
-	return Promise.all(promises).then(async (val) => {
-		try { 
-			await docRef.set(data) 
-			if (!isNil(data.creator)) {
-				if(!isNil(data.creator.docRef)) { delete data.creator.docRef }  // NB. was causing a circular reference error with algolia
-			}
-			await addDocToSearchIndex(data, searchIndex) 
-		}
-		catch (err) { 
-			try { await app.firestore().collection(searchIndex).doc(data.uid).delete() } // Clean up created item (NB. This isn't working)
-			catch (err) { throw new Error(err) }
-			throw new Error(err) 
-		}
-		return
-	})
+function _cleanData(data) {
+	// NB. 'creator.docRef' was causing a circular reference error with Algolia indexing
+	if (!isNil(data.creator)) {
+		if(!isNil(data.creator.docRef)) { delete data.creator.docRef }  
+	}
 }
 
 async function addTimestamp(data) { data.createdAt = Date.now() }
-// async function addTimestampToDoc(docRef, collection) {
-// 	try { return docRef.set({ createdAt: Date.now() }, { merge: true }) }
-// 	catch (err) { throw new Error(err) }
-// }
 
-async function addCreator(data) {
-	// TODO annonymous users 'urlSlug' is blank
-	
+// TODO Review for anonymous user case -- e.g. annonymous users 'urlSlug' is blank (?)
+async function addCreator(data, searchIndex) {
+	console.log("[addCreator]")
+	if (searchIndex === 'users') { return }
+
 	let creator = null
 	try { creator = await getUserRecord(data.creator.uid) } 
 	catch (err) { throw new Error(err) }
 
-	// Is this 'undefined' for anonymous users?
-
-	console.log("[addCreator]")
-	console.log("data.creator: ", data.creator)
-	console.log("data.creator.displayName: ", data.creator.displayName)
+	// console.log("data.creator: ", data.creator)
+	// console.log("data.creator.displayName: ", data.creator.displayName)
 
 	data.creator.displayName = creator.displayName || ''
 	data.creator.photoURL = creator.photoURL || ''
-	// data.creator.docRef = app.firestore().collection('users').doc(data.creator.uid)
 	data.creator.urlSlug = creator.urlSlug || ''
-
-	console.log("data.creator")
-
 }
-
-
-
-	// return new Promise((resolve, reject) => {
-	// 	try {
-	// 		let creator = await getUserRecord(data.creator.uid)
-	// 		// TODO data.creator.uid should already be set
-	// 		data.creator.displayName = creator.displayName
-	// 		data.creator.photoURL = creator.photoURL
-	// 		data.creator.docRef = app.firestore().collection('users').doc(data.creator.uid)
-	// 		resolve(data)
-	// 	}
-	// 	catch (err) {
-	// 		reject(err)
-	// 	}
-	// 	// TODO is this the right place for this?
-	// 	return
-	// })
-
-// async function addCreatorToDoc(docRef, data) {
-// 	console.log('[addCreatorToSnapshot]')
-// 	let snapshot = await docRef.get()
-// 	let data = snapshot.data()
-// 	let creator = null
-//
-// 	try { creator = await getUserRecord(data.creator.uid) } 
-// 	catch (err) { throw new Error(err) }
-//
-// 	console.log('creator: ', creator)
-//
-// 	// TODO need to set values for anonymous users
-// 	try { await docRef.set(
-// 		{
-// 			creator: {
-// 				displayName: creator.displayName || '',
-// 				photoURL: creator.photoURL || '',
-// 				docRef: app.firestore().collection('usrs').doc(data.creator.uid),
-// 			}
-// 		},
-// 		{ 
-// 			mergeFields: [
-// 				'creator.displayName',
-// 				'creator.photoURL',
-// 				'creator.docRef',
-// 			]
-// 		}
-// 	)}
-// 	catch (err) { throw new Error(err) }
-// }
 
 async function addSlug(data, searchIndex) {
 	let slug = null
 	if (searchIndex === 'users') { 
-		if (data.displayName === '') { slug = data.uid } // NB. Anonymous users
+		if (data.displayName === '') { slug = data.uid } // NB. To handle anonymous users which don't have a 'displayName' property.
 		else { slug = data.displayName }
 	} 
 	else { slug = data.name }
@@ -194,79 +170,45 @@ async function addSlug(data, searchIndex) {
 	// slug = slug.toLowerCase()
 	slug = slug.replace(/ /gi, '_')
 	slug = encodeURIComponent(slug)
-	let slugTaken = await _slugTaken(slug, searchIndex)
+	const slugTaken = await _slugTaken(slug, searchIndex)
 	if (slugTaken) { slug = await _generateUniqueSlug(slug, searchIndex) }
 	data.urlSlug = '/' + searchIndex + '/' + slug
 }
-// async function addUrlPathToDoc(docRef, searchIndex) {
-// 	let snapshot = await docRef.get()
-// 	let data = snapshot.data()
-// 	let path = null
-// 	if (searchIndex === 'users') { path = data.displayName } 
-// 	else { path = data.name }
-// 	path.toLowerCase()
-// 	path = path.replace(' ', '_')
-// 	path = encodeURIComponent(path)
-// 	let pathTaken = await _pathTaken(path, searchIndex)
-// 	if (pathTaken) { path = await _generateUniquePath(path, searchIndex) }
-// 	docRef.set({ urlPath: path }, { merge: true } )
-// }
+
 async function _slugTaken(slug, searchIndex) {
-	let fullSlug = searchIndex + '/' + slug
+	console.log("[_slugTaken]")
+	const fullSlug = '/' + searchIndex + '/' + slug
+	console.log("searching for: ", fullSlug)
 	let slugTaken = app.firestore().collection(searchIndex).where("urlSlug", "==", fullSlug)
 	slugTaken = await slugTaken.get()
+	console.log("slugTaken: ", slugTaken)
 	if (slugTaken.docs.length > 0) { return true }
 	else { return false }
 }
-// async function _pathTaken(path, searchIndex) {
-// 	let pathTaken = await app.firestore().collection(searchIndex).where("urlPath", "==", path)
-// 	pathTaken = await pathTaken.get()
-// 	if (pathTaken.docs.length > 0) { return true }
-// 	else { return false }
-// }
+
 function _generateRandomInt(max) {
-	let val = Math.floor(Math.random() * Math.floor(max))
-	if (val === 0) { return _generateRandomInt(max) }
-	else { return val }
+	return Math.floor(Math.random() * Math.floor(max)) + 1
 }
+
 function _generateSlugExtension(len=6) {
-	let slugExtLen = _generateRandomInt(len) 
-	let slugExt = "-" + nanoid(slugExtLen)
+	const slugExtLen = _generateRandomInt(len) 
+	const slugExt = "-" + nanoid(slugExtLen)
 	return slugExt
 }
-// function _generatePathExtension(len=6) {
-// 	let pathExtLen = _generateRandomInt(len) 
-// 	let pathExt = "-" + nanoid(pathExtLen)
-// 	return pathExt
-// }
+
 async function _generateUniqueSlug(slug, searchIndex) {
-	let slugExt = _generateSlugExtension()
-	let newSlug = slug + slugExt
-	let slugTaken = await _slugTaken(newSlug, searchIndex)
+	const slugExt = _generateSlugExtension()
+	const newSlug = slug + slugExt
+	const slugTaken = await _slugTaken(newSlug, searchIndex)
 	if (slugTaken) { return _generateUniqueSlug(slug, searchIndex) }
 	else { return newSlug }
 }
-// async function _generateUniquePath(path, searchIndex) {
-// 	let pathExt = _generatePathExtension()
-// 	let tmpPath = path + pathExt
-// 	let pathTaken = await _pathTaken(tmpPath, searchIndex)
-// 	if (pathTaken) { return _generateUniquePath(path, searchIndex) }
-// 	else { return tmpPath }
-// }
 
 async function addDocToSearchIndex(data, searchIndex) {
 	console.log("[addDocToSearchIndex]")
 	try { AlgoliaSearch.addDocToIndex(data, searchIndex) }
 	catch (err) { throw new Error(err) }
 }
-// async function addDocToSearchIndex(docRef, searchIndex) {
-// 	console.log("[addDocToSearchIndex]")
-// 	let snapshot = await docRef.get()
-// 	console.log("doc: ", snapshot.data())
-// 	try { AlgoliaSearch.addDocToIndex(snapshot.data(), searchIndex) }
-// 	catch (err) { throw new Error(err) }
-// }
-
 
 // ---------------------------
 // 	Utils : Deletion Pipeline
