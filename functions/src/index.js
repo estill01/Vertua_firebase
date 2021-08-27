@@ -14,7 +14,7 @@ export const onAccountCreate = functions.auth.
 	user()
 	.onCreate(async (userRecord, context) => {
 		let user = buildUserDoc(userRecord)
-		try { await app.firestore().collection('users').doc(userRecord.uid).set(user) } 
+		try { await app.firestore().collection('users').doc(userRecord.uid).set(user) }
 		catch (err) { throw new Error("[onAccountCreate]") }
 		// TODO check if anonymous ; if so, add to 'anonymousUsers' collection
 		// TODO Fix mailers; SendGrid is wonky, see if NodeMailer is more straightforward
@@ -23,7 +23,7 @@ export const onAccountCreate = functions.auth.
 export const onAccountDelete = functions.auth.
 	user()
 	.onDelete(async (userRecord, context) => {
-		try { await app.firestore().collection('users').doc(userRecord.uid).delete() } 
+		try { await app.firestore().collection('users').doc(userRecord.uid).delete() }
 		catch (err) { throw new Error("[onAccountDelete]") }
 	})
 
@@ -38,14 +38,14 @@ export const onUserCreate = functions.firestore.
 		// handler : function(snapshot: <QueryDocumentSnapshot>, context: <EventContext>) : PromiseLike<any>
 		console.log("[onUserCreate]")
 		intakePipeline(snapshot, 'users')
-	}) 
+	})
 
 export const onUserDelete = functions.firestore.
 	document('users/{userId}')
 	.onDelete(async (snapshot, context) => {
 		console.log("[onUserDelete]")
-		deletionPipeline(context.params.userId, 'users') 
-	}) 
+		deletionPipeline(context.params.userId, 'users')
+	})
 
 
 
@@ -68,16 +68,16 @@ export const onProjectDelete = functions.firestore.
 
 
 // ===========================
-// 	Utils 
+// 	Utils
 // ===========================
 // ---------------------------
 // 	Utils : Intake Pipeline
 // ---------------------------
-	
+
 // async function intakePipeline(snapshot, searchIndex) {
 // 	if (isNil(snapshot)) { throw new Error('`intakePipeline()` parameter `snapshot` cannot be null') }
 // 	if (isNil(searchIndex)) { throw new Error('`intakePipeline()` parameter `searchIndex` cannot be null') }
-// 	let docRef = snapshot.ref 
+// 	let docRef = snapshot.ref
 // 	let data = snapshot.data()
 // 	let promises = []
 //
@@ -87,17 +87,17 @@ export const onProjectDelete = functions.firestore.
 // 	promises.push(addSlug(data, searchIndex))
 //
 // 	return Promise.all(promises).then(async (val) => {
-// 		try { 
-// 			await docRef.set(data) 
+// 		try {
+// 			await docRef.set(data)
 // 			if (!isNil(data.creator)) {
 // 				if(!isNil(data.creator.docRef)) { delete data.creator.docRef }  // NB. was causing a circular reference error with algolia
 // 			}
-// 			await addDocToSearchIndex(data, searchIndex) 
+// 			await addDocToSearchIndex(data, searchIndex)
 // 		}
-// 		catch (err) { 
+// 		catch (err) {
 // 			try { await app.firestore().collection(searchIndex).doc(data.uid).delete() } // Clean up created item (NB. This isn't working)
 // 			catch (err) { throw new Error(err) }
-// 			throw new Error(err) 
+// 			throw new Error(err)
 // 		}
 // 		return
 // 	})
@@ -106,7 +106,7 @@ export const onProjectDelete = functions.firestore.
 async function intakePipeline(snapshot, searchIndex) {
 	if (isNil(snapshot)) { throw new Error('`intakePipeline()` parameter `snapshot` cannot be null') }
 	if (isNil(searchIndex)) { throw new Error('`intakePipeline()` parameter `searchIndex` cannot be null') }
-	let docRef = snapshot.ref 
+	let docRef = snapshot.ref
 	let data = snapshot.data()
 
 	try {
@@ -116,26 +116,26 @@ async function intakePipeline(snapshot, searchIndex) {
 			addSlug(data, searchIndex),
 		])
 		_cleanData(data)
-	
+
 		await Promise.all([
-			docRef.set(data), 
+			docRef.set(data),
 			addDocToSearchIndex(data, searchIndex),
 		])
-	} 
-	catch (err) { 
+	}
+	catch (err) {
 		// NB. Document 'delete()' triggers deletion pipeline which handles removing item from Algolia index
-		try { await app.firestore().collection(searchIndex).doc(data.uid).delete() } 
+		try { await app.firestore().collection(searchIndex).doc(data.uid).delete() }
 		catch (err) { throw new Error(err) }
 
-		throw new Error(err) 
-	} 
+		throw new Error(err)
+	}
 	return
 }
 
 function _cleanData(data) {
 	// NB. 'creator.docRef' was causing a circular reference error with Algolia indexing
 	if (!isNil(data.creator)) {
-		if(!isNil(data.creator.docRef)) { delete data.creator.docRef }  
+		if(!isNil(data.creator.docRef)) { delete data.creator.docRef }
 	}
 }
 
@@ -147,7 +147,7 @@ async function addCreator(data, searchIndex) {
 	if (searchIndex === 'users') { return }
 
 	let creator = null
-	try { creator = await getUserRecord(data.creator.uid) } 
+	try { creator = await getUserRecord(data.creator.uid) }
 	catch (err) { throw new Error(err) }
 
 	// console.log("data.creator: ", data.creator)
@@ -160,10 +160,10 @@ async function addCreator(data, searchIndex) {
 
 async function addSlug(data, searchIndex) {
 	let slug = null
-	if (searchIndex === 'users') { 
+	if (searchIndex === 'users') {
 		if (data.displayName === '') { slug = data.uid } // NB. To handle anonymous users which don't have a 'displayName' property.
 		else { slug = data.displayName }
-	} 
+	}
 	else { slug = data.name }
 	if (slug === '') { slug = data.uid }
 
@@ -188,7 +188,7 @@ function _generateRandomInt(max) {
 }
 
 function _generateSlugExtension(len=6) {
-	const slugExtLen = _generateRandomInt(len) 
+	const slugExtLen = _generateRandomInt(len)
 	const slugExt = "-" + nanoid(slugExtLen)
 	return slugExt
 }
@@ -235,7 +235,7 @@ function buildUserDoc(userRecord) {
 		displayName: userRecord.displayName || '',
 		photoURL: userRecord.photoURL || '',
 		visibilty: 'public',
-	} 
+	}
 }
 
 async function getUserRecord(id) {

@@ -1,5 +1,9 @@
-# Vertua: All Things Firebase
+# Vertua.com Firebase code
 
-- Rules
+Firebase code for vertua.com website
+
+- Firestore DB Security Rules
 - Indexes
 - Functions
+- Algolia search
+

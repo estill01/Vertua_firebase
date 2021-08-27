@@ -7,3 +7,10 @@ functions/dist/**/*
 firebase-debug.log
 firestore-debug.log
 functions-debug.log
+
+.runtimeconfig.json
+
+functions/config/config.*
+functions/dist/
+functions/package-lock.json
+functions/.env*

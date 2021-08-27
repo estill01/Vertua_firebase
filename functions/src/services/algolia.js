@@ -8,7 +8,7 @@ import { union } from 'lodash'
 // -------------------------------
 const AlgoliaSearch = {}
 AlgoliaSearch.client = Algolia(
-	functions.config().algolia.app_id, 
+	functions.config().algolia.app_id,
 	functions.config().algolia.admin_key,
 	{ requester: createNodeHttpRequester() }
 )
@@ -67,7 +67,7 @@ AlgoliaSearch.addDocToIndex = async (doc, index) => {
 		let result = await AlgoliaSearch.index[index].saveObject(doc)
 		console.log("result: ", result)
 		return result
-	} 
+	}
 	catch (err) { throw new Error(err) }
 }
 

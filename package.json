@@ -2,7 +2,7 @@
 		"name": "firebase",
 		"description": "Security Rules, Cloud Functions, and more",
 		"version": "1.0.0",
-		"author": "Vertua Inc",
+		"author": "Ethan Stillmabn, Vertua Inc",
 		"private": true,
 		"license": "SEE LICENSE IN LICENSE",
 		"scripts": {
@@ -28,10 +28,6 @@
 				"emulators": "npm run use:staging && npm run vars:emulator && firebase emulators:start --only functions,firestore",
 				"shell": "npm run use:staging && cd functions && npm run build && npm run shell",
 				"vars:emulator": "firebase functions:config:get > .runtimeconfig.json"
-		},
-		"repository": {
-				"type": "git",
-				"url": "git+https://github.com/vertua/vertua-firebase.git"
 		},
 		"devDependencies": {
 				"firestore-rulez": "^0.2.0"
