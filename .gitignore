@@ -1,4 +1,4 @@
-.DS_Store
+.S_Store
 node_modules/
 functions/node_modules/
 functions/dist/**/*
@@ -13,4 +13,5 @@ functions-debug.log
 functions/config/config.*
 functions/dist/
 functions/package-lock.json
-functions/.env*
+functions/.env
+functions/.env.*
