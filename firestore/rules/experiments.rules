@@ -1,0 +1,24 @@
+		// EXPERIMENTS
+		// -------------------------
+
+		match /experiments/{experimentId} {
+            // TODO - scope this to ACL
+			allow read: if request.auth.uid != null;
+
+			allow create: if validCreatorId()
+			 							&& isSignedIn()
+			 							&& isExperiment(request.resource.data);
+
+			allow delete: if request.auth.uid == resource.data.creator.uid;
+		}
+
+		function isExperiment(doc) {
+			return doc.size() == 4
+			&& doc.name is string
+			&& doc.description is string
+			&& doc.uid is string
+			&& doc.creator is map
+			&& doc.creator.size() == 1
+			&& doc.creator.uid is string;
+		}
+
